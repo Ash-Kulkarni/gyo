@@ -9,7 +9,7 @@ def handle_fire_all(player, angle, move_speed, bullets):
     for bay in player.get("bays", []):
         if bay["cooldown"] > 0:
             continue
-        bay["cooldown"] = 0.2
+        bay["cooldown"] = bay['max_cooldown']
 
         weapon_id = bay["weapon_id"]
         offset_angle = bay.get("offset_angle", 0)
@@ -26,7 +26,8 @@ def handle_fire_all(player, angle, move_speed, bullets):
                 "x": bx, "y": by,
                 "vx": math.cos(angle) * total_speed,
                 "vy": math.sin(angle) * total_speed,
-                "from": id(player)
+                "from": id(player),
+                "radius": 2,
             })
 
         elif weapon_id == "spread":
@@ -38,7 +39,8 @@ def handle_fire_all(player, angle, move_speed, bullets):
                 projectiles.append({
                     "x": bx, "y": by,
                     "vx": sx, "vy": sy,
-                    "from": id(player)
+                    "from": id(player),
+                    "radius": 2,
                 })
 
     bullets.extend(projectiles)

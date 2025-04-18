@@ -1,23 +1,24 @@
 from fastapi import WebSocket
 
+
 def default_bay():
     return [
-        {"weapon_id": "rapid", "cooldown": 0,
+        {"weapon_id": "rapid", "cooldown": 0, "max_cooldown": 0.2,
          "offset_angle": 2.3,
          "distance": 20
          },
-        {"weapon_id": "rapid", "cooldown": 0,
+        {"weapon_id": "rapid", "cooldown": 0, "max_cooldown": 0.2,
          "offset_angle": -2.3,
          "distance": 20
          },
-        # {"weapon_id": "spread", "cooldown": 0,
-        #  "offset_angle": 5,
-        #  "distance": 20
-        #  },
-        # {"weapon_id": "spread", "cooldown": 0,
-        #  "offset_angle": -5,
-        #  "distance": 20
-        #  },
+        {"weapon_id": "spread", "cooldown": 0, "max_cooldown": 1,
+         "offset_angle": 5,
+         "distance": 20
+         },
+        {"weapon_id": "spread", "cooldown": 0, "max_cooldown": 1,
+         "offset_angle": -5,
+         "distance": 20
+         },
     ]
 
 

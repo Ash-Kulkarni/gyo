@@ -122,7 +122,7 @@ export function draw(state, input) {
 function drawBullets(bullets) {
   for (const b of bullets) {
     ctx.beginPath();
-    ctx.arc(b.x, b.y, 2, 0, 2 * Math.PI);
+    ctx.arc(b.x, b.y, b.radius, 0, 2 * Math.PI);
     ctx.shadowColor = "white";
     ctx.shadowBlur = 15;
     ctx.fillStyle = "white";
