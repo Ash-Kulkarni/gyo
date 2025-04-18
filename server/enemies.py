@@ -1,17 +1,14 @@
 import random
 from enum import Enum
+from .shared.shapes import Shape
 
 
-class Shape(Enum):
-    CIRCLE = "circle"
-    SQUARE = "square"
-    TRIANGLE = "triangle"
-    HEXAGON = "hexagon"
 
 
 class EnemyType(Enum):
     CHASER = "chaser"
 
+ENEMY_COLOURS = ["#ff4b4b", "#ff944b", "#ffe14b", "#4bff75", "#4bd5ff", "#9b4bff"]
 
 def spawn_enemy(x, y, type=EnemyType.CHASER.value):
     return {
@@ -23,7 +20,8 @@ def spawn_enemy(x, y, type=EnemyType.CHASER.value):
         "type": type,
         "speed": 1.5,
         "radius": 10,  # for hit detection
-        "shape_id":  random.choice(list(Shape)).value
+        "shape_id":  random.choice(list(Shape)).value,
+        "colour": random.choice(ENEMY_COLOURS),
     }
 
 

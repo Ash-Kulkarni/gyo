@@ -9,6 +9,7 @@ window.addEventListener("resize", () => {
 
 const ctx = canvas.getContext("2d");
 import { playerId } from "./net.js";
+import { SHAPES } from "./shared/shapes.js";
 
 export function drawTriangle(x, y, angle, color) {
   ctx.save();
@@ -85,18 +86,7 @@ function drawBackground(camX, camY) {
 
 function drawEnemies(enemies) {
   for (const e of enemies) {
-    ctx.save();
-    ctx.translate(e.x, e.y);
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
-    ctx.shadowColor = "rgba(255,0,0,0.2)";
-    ctx.shadowBlur = 8;
-
-    ctx.beginPath();
-    // square enemy
-    ctx.rect(-10, -10, 20, 20);
-    ctx.stroke();
-    ctx.restore();
+    drawPolygon(e.x, e.y, e.a || 0, SHAPES[e.shape_id], e.colour);
   }
 }
 // const nodes = createSectorMap(30, 1200, 500);
@@ -221,5 +211,27 @@ function drawSectorMap(ctx, nodes) {
     ctx.stroke();
   }
 
+  ctx.restore();
+}
+function drawPolygon(x, y, angle, verts, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.moveTo(verts[0][0], verts[0][1]);
+  for (let i = 1; i < verts.length; i++) {
+    ctx.lineTo(verts[i][0], verts[i][1]);
+  }
+  ctx.closePath();
+
+  ctx.fillStyle = `${color}33`; // transparent fill
+  ctx.fill();
+  // Glow effect
+  ctx.strokeStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 20;
+  ctx.lineWidth = 2;
+
+  ctx.stroke();
   ctx.restore();
 }
