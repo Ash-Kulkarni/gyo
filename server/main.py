@@ -5,7 +5,7 @@ import random
 import json
 import asyncio
 import os
-
+from enum import Enum
 
 def is_testing():
     return os.getenv("TESTING", "0") == "1"
@@ -14,6 +14,12 @@ def is_testing():
 app = FastAPI()
 players = {}
 bullets = []
+
+class Shape(Enum):
+    CIRCLE = "circle"
+    SQUARE = "square"
+    TRIANGLE = "triangle"
+    HEXAGON = "hexagon"
 
 
 def spawn_enemy(x, y, type="chaser"):
@@ -26,6 +32,7 @@ def spawn_enemy(x, y, type="chaser"):
         "type": type,
         "speed": 1.5,
         "radius": 10,  # for hit detection
+        "shape_id":  random.choice(list(Shape)).value
     }
 
 
@@ -224,50 +231,78 @@ def handle_enemy_player_collisions():
                 player["hp"] -= 1  # basic contact damage
 
 
+def respawn_dead_players(players):
+
+    for pid, player in players.items():
+
+        if player["hp"] <= 0:
+
+            print(f"💀 Respawning player {pid}")
+
+            player["x"], player["y"] = random.randint(-2000, 2000), random.randint(-2000, 2000)
+
+            player["hp"] = 10
+
+async def broadcast_state(players, state):
+
+    for p in players.values():
+        try:
+            await p["ws"].send_text(json.dumps(state))
+        except:
+            continue
+
+
+def read_state(players, bullets, enemies):
+
+    state = {
+
+        "players": {
+
+            pid: {"x": p["x"], "y": p["y"], "a": p["a"], "bays": p["bays"], 'hp': p['hp']} for pid, p in players.items()
+
+        },
+
+        'bullets': bullets,
+
+        'enemies': enemies,
+
+    }
+
+    return state
+def remove_out_of_bounds_bullets(bullets):
+
+    bullets[:] = [b for b in bullets if -2000 < b['x'] < 2000 and -2000 < b['y'] < 2000]
+
+def tick_player_weapon_cooldowns(players, TICK_RATE):
+    for p in players.values():
+        for weapon in p["bays"]:
+            weapon["cooldown"] = max(0, weapon["cooldown"] - TICK_RATE)
+
+def tick_bullets_velocity(bullets):
+    for b in bullets:
+        b["x"] += b["vx"]
+        b["y"] += b["vy"]
+
 async def broadcast_loop():
     FRAME_RATE = 60
     TICK_RATE = 1 / FRAME_RATE
     global players, bullets, enemies
     while True:
-        state = {
-            "players": {
-                pid: {"x": p["x"], "y": p["y"], "a": p["a"], "bays": p["bays"], 'hp': p['hp']} for pid, p in players.items()
-            },
-            'bullets': bullets,
-            'enemies': enemies,
+        state = read_state(players, bullets, enemies)
+        print(f"Broadcasting state: {state}")
 
-        }
-        for p in players.values():
-            for bay in p['bays']:
-                bay['cooldown'] = max(0, bay['cooldown'] - TICK_RATE)
-
+        tick_player_weapon_cooldowns(players, TICK_RATE)
         update_enemy_behavior(enemies, players)
         maybe_spawn_enemies(enemies)
         handle_enemy_player_collisions()
-        for pid, p in players.items():
-            if p["hp"] <= 0:
-                print(f"💀 Respawning player {pid}")
-                p["x"], p["y"] = random.randint(-2000, 2000), random.randint(-2000, 2000)
-                p["hp"] = 10
-        for pid in players:
-            if players[pid]["hp"] <= 0:
-                print(f"💀 Player {pid} died")
-
-
-        for p in players.values():
-            try:
-                await p["ws"].send_text(json.dumps(state))
-            except:
-                continue
+        respawn_dead_players(players)
+        await broadcast_state(players, state)
         await asyncio.sleep(TICK_RATE)
-        for b in bullets:
-            b['x'] += b['vx']
-            b['y'] += b['vy']
-        res = check_bullet_collisions(bullets, enemies)
+        tick_bullets_velocity(bullets)
+        [next_bullets, _dead_enemies] = check_bullet_collisions(bullets, enemies)
+        bullets = next_bullets
+        remove_out_of_bounds_bullets(bullets)
 
-        bullets = res[0]
-        bullets[:] = [b for b in bullets if -2000 <
-                      b['x'] < 2000 and -2000 < b['y'] < 2000]
 
 
 @app.on_event("startup")
