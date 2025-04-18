@@ -13,6 +13,7 @@ pkgs.mkShell {
     pkgs.mypy
     pkgs.gum
     pkgs.live-server
+    pkgs.lima
   ];
 
   shellHook = ''

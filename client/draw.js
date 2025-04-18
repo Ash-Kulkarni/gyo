@@ -117,15 +117,8 @@ export function draw(state, input) {
   drawEnemies(enemies);
   // drawSectorMap(ctx, nodes);
   for (const pid in players) {
-    const hp = players[pid].hp ?? 10;
-    const hpRatio = Math.max(0, Math.min(1, hp / 10));
     const { x, y, a } = players[pid];
     const color = pid === playerId ? "cyan" : "magenta";
-    ctx.beginPath();
-    ctx.arc(x, y, 14, 0, Math.PI * 2 * hpRatio);
-    ctx.strokeStyle = "rgba(0, 255, 255, 0.4)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
     drawTriangle(x, y, a || 0, color);
     drawBays(players[pid], color);
     if (pid === playerId) {

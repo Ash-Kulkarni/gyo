@@ -22,7 +22,7 @@ def spawn_enemy(x, y, type="chaser"):
         "y": y,
         "vx": 0,
         "vy": 0,
-        "hp": 5,
+        "hp": 1,
         "type": type,
         "speed": 1.5,
         "radius": 10,  # for hit detection
@@ -44,7 +44,7 @@ def dist_sq(x1, y1, x2, y2):
 
 
 def check_bullet_collisions(bullets, enemies):
-    hit_radius_sq = 30  # ~4 px hit radius
+    hit_radius_sq = 16  # ~4 px hit radius
 
     dead_enemies = []
     live_bullets = []
