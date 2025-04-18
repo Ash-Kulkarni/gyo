@@ -1,6 +1,7 @@
 import random
 from enum import Enum
 
+
 class Shape(Enum):
     CIRCLE = "circle"
     SQUARE = "square"
@@ -8,7 +9,11 @@ class Shape(Enum):
     HEXAGON = "hexagon"
 
 
-def spawn_enemy(x, y, type="chaser"):
+class EnemyType(Enum):
+    CHASER = "chaser"
+
+
+def spawn_enemy(x, y, type=EnemyType.CHASER.value):
     return {
         "x": x,
         "y": y,
@@ -22,12 +27,8 @@ def spawn_enemy(x, y, type="chaser"):
     }
 
 
-
-
 def maybe_spawn_enemies(enemies):
     if len(enemies) < 10:
         x = random.randint(-2000, 2000)
         y = random.randint(-2000, 2000)
         enemies.append(spawn_enemy(x, y))
-
-

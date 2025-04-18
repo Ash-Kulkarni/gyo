@@ -27,3 +27,13 @@ def check_bullet_collisions(bullets, enemies):
 
     return live_bullets, dead_enemies
 
+
+def handle_enemy_player_collisions(players, enemies):
+    for pid, player in players.items():
+        px, py = player["x"], player["y"]
+        for enemy in enemies:
+            dx = enemy["x"] - px
+            dy = enemy["y"] - py
+            dist_sq = dx * dx + dy * dy
+            if dist_sq < (20 ** 2):  # collision range
+                player["hp"] -= 1  # basic contact damage

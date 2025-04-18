@@ -1,24 +1,22 @@
-from .player import default_player
 from fastapi.websockets import WebSocketDisconnect
 from fastapi import FastAPI, WebSocket
 import json
 import asyncio
-from .client_input import handle_client_input
 import os
 
+from .player import default_player
+from .client_input import handle_client_input
 from .systems import (
     read_state,
     tick_bullets_velocity,
     update_enemy_behavior,
-    handle_enemy_player_collisions,
     respawn_dead_players,
     remove_out_of_bounds_bullets,
     broadcast_state,
     tick_player_weapon_cooldowns
 )
-
 from .enemies import maybe_spawn_enemies
-from .collision import check_bullet_collisions
+from .collision import check_bullet_collisions, handle_enemy_player_collisions
 
 
 def is_testing():
@@ -35,8 +33,6 @@ async def ws_endpoint(ws: WebSocket):
     await ws.accept()
     await ws.send_text(json.dumps({"type": "hello", "pid": pid}))
     print(f"🔌 Player connected: {pid}")
-
-
     players = app.state.players
     bullets = app.state.bullets
     enemies = app.state.enemies
@@ -48,7 +44,7 @@ async def ws_endpoint(ws: WebSocket):
             input_data = json.loads(data)
             if not input_data:
                 continue
-            handle_client_input(players,bullets, input_data, pid)
+            handle_client_input(players, bullets, input_data, pid)
 
             if is_testing():
                 await broadcast_loop(players, bullets, enemies)
@@ -64,7 +60,6 @@ async def broadcast_loop(players, bullets, enemies):
     while True:
         state = read_state(players, bullets, enemies)
         # print(f"Broadcasting state: {state}")
-        print(bullets)
 
         tick_player_weapon_cooldowns(players, TICK_RATE)
         update_enemy_behavior(enemies, players)
