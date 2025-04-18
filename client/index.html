@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ship Game</title>
+    <style>
+      canvas {
+        background: black;
+        display: block;
+        margin: 0 auto;
+      }
+      #debug {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #0f0;
+        padding: 6px 8px;
+        font: 12px monospace;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" width="800" height="600" display="block"></canvas>
+    <div id="debug"></div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
