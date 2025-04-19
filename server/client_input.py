@@ -73,4 +73,5 @@ async def handle_client_input(players, bullets, input_data, pid):
     players[pid]["x"] = max(-2000, min(players[pid]["x"], 2000))
     players[pid]["y"] = max(-2000, min(players[pid]["y"], 2000))
     if input_data.get("fire"):
-        handle_fire_all(players[pid], players[pid]['a'], move_speed, bullets, pid)
+        handle_fire_all(players[pid], players[pid]
+                        ['a'], move_speed, bullets, pid)

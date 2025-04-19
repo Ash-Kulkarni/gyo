@@ -80,6 +80,8 @@ export const EDITOR_KEYMAP = {
   DPAD_RIGHT_KEY,
   A_KEY,
   B_KEY,
+  RIGHT_BUMPER_KEY,
+  LEFT_BUMPER_KEY,
 };
 
 export const parseGamePadEditing = (gp) => {
