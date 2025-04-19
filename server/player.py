@@ -3,32 +3,50 @@ from fastapi import WebSocket
 
 def default_bay():
     return [
-        {"weapon_id": "rapid",
-         "cooldown": 0,
-         "max_cooldown": 0.2,
-         "offset_angle": 2.3,
-         "distance": 20
-         },
-        {"weapon_id": "rapid", "cooldown": 0, "max_cooldown": 0.2,
-         "offset_angle": -2.3,
-         "distance": 20
-         },
-        {"weapon_id": "spread", "cooldown": 0, "max_cooldown": 1,
-         "offset_angle": 5,
-         "distance": 20
-         },
-        {"weapon_id": "spread", "cooldown": 0, "max_cooldown": 1,
-         "offset_angle": -5,
-         "distance": 20
-         },
-        {"weapon_id": "spread", "cooldown": 0, "max_cooldown": 0.2,
-         "offset_angle": 8,
-         "distance": 45
-         },
-        {"weapon_id": "spread", "cooldown": 0, "max_cooldown": 0.2,
-         "offset_angle": -8,
-         "distance": 45
-         },
+        {
+            "weapon_id": "rapid",
+            "cooldown": 0,
+            "max_cooldown": 0.2,
+            "offset_angle": 0.2,
+            "distance": 20
+        },
+        {
+            "weapon_id": "rapid",
+            "cooldown": 0,
+            "max_cooldown": 0.2,
+            "offset_angle": -0.2,
+            "distance": 20
+        },
+
+        {
+            "weapon_id": "rapid",
+            "cooldown": 0,
+            "max_cooldown": 0.2,
+            "offset_angle": 1,
+            "distance": 50
+        },
+        {
+            "weapon_id": "rapid",
+            "cooldown": 0,
+            "max_cooldown": 0.2,
+            "offset_angle": -1,
+            "distance": 50
+        },
+
+        {
+            "weapon_id": "spread",
+            "cooldown": 0,
+            "max_cooldown": 0.3,
+            "offset_angle": 1.5,
+            "distance": 30
+        },
+        {
+            "weapon_id": "spread",
+            "cooldown": 0,
+            "max_cooldown": 0.3,
+            "offset_angle": -1.5,
+            "distance": 30
+        },
     ]
 
 

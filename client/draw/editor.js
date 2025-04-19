@@ -1,4 +1,5 @@
 import { EDITOR_KEYMAP } from "../input";
+import { sendInput } from "../net.js";
 
 const EDITOR_MODE = {
   INVENTORY: "inventory",
@@ -14,11 +15,22 @@ const editorState = {
 };
 
 // TODO
+//
+
+const equipModuleFromInventory = (
+  equippedModules,
+  inventory,
+  inventoryIndex,
+) => {};
+const unequipModule = (equippedModules, inventory, equippedIndex) => {};
+const editModulePosition = (equippedModules, equippedIndex, position) => {};
+const editModuleAim = (equippedModules, equippedIndex, aim) => {};
+
 export function handleEditorInput(input, player, inventory) {
-  console.log("Editor input:", input);
+  // console.log("Editor input:", input);
   const mods = player.modules;
-  console.log(mods);
-  console.log(inventory);
+  // console.log(mods);
+  // console.log(inventory);
 
   switch (editorState.mode) {
     case "inventory":
