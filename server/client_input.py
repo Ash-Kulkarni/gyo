@@ -1,4 +1,5 @@
 import math
+from .modules import activate_modules
 
 
 def handle_fire_all(player, angle, move_speed, bullets):
@@ -46,20 +47,19 @@ def handle_fire_all(player, angle, move_speed, bullets):
     bullets.extend(projectiles)
 
 
-def handle_client_input(players, bullets, input_data, pid):
+async def handle_client_input(players, bullets, input_data, pid):
 
     move_x = input_data.get("move", {}).get("x", 0)
     move_y = input_data.get("move", {}).get("y", 0)
     move_angle = math.atan2(move_y, move_x)
 
-    move_speed = 5
+    move_speed = players[pid].get("speed", 0)
     players[pid]["x"] += move_x * move_speed
     players[pid]["y"] += move_y * move_speed
 
-    if input_data.get("dash", False) and (move_x or move_y):
-        dash_strength = 10
-        players[pid]['x'] += math.cos(move_angle) * dash_strength
-        players[pid]['y'] += math.sin(move_angle) * dash_strength
+    if input_data.get("activate_modules", False):
+        if module_ids := input_data["activate_modules"]:
+            await activate_modules(players[pid], module_ids)
 
     if input_data.get("aim", False):
         aim_x = input_data.get("aim", {}).get("x", 0)

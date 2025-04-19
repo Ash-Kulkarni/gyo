@@ -17,6 +17,7 @@ from .systems import (
 )
 from .enemies import maybe_spawn_enemies
 from .collision import check_bullet_collisions, handle_enemy_player_collisions
+from .modules import tick_modules
 
 
 def is_testing():
@@ -44,7 +45,7 @@ async def ws_endpoint(ws: WebSocket):
             input_data = json.loads(data)
             if not input_data:
                 continue
-            handle_client_input(players, bullets, input_data, pid)
+            await handle_client_input(players, bullets, input_data, pid)
 
             if is_testing():
                 await broadcast_loop(players, bullets, enemies)
@@ -73,6 +74,7 @@ async def broadcast_loop(players, bullets, enemies):
             bullets, enemies)
         bullets[:] = next_bullets
         remove_out_of_bounds_bullets(bullets)
+        tick_modules(players, TICK_RATE)
 
 
 @ app.on_event("startup")

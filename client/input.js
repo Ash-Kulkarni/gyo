@@ -1,3 +1,36 @@
+const A_KEY = 0;
+const B_KEY = 1;
+const X_KEY = 2;
+
+const DPAD_UP = 12;
+const DPAD_DOWN = 13;
+
+const moduleMapping = {
+  [A_KEY]: "boost",
+  [B_KEY]: "shield",
+  [X_KEY]: "shield",
+  [DPAD_UP]: "shield",
+  [DPAD_DOWN]: "shield",
+};
+
+const equippedModules = [
+  {
+    module_id: 1,
+    type: "boost",
+    keymap: A_KEY,
+  },
+  {
+    module_id: 2,
+    type: "boost",
+    keymap: B_KEY,
+  },
+  {
+    module_id: 3,
+    type: "shield",
+    keymap: X_KEY,
+  },
+];
+
 export function pollGamepad() {
   const gp = navigator.getGamepads()[0];
   if (!gp) return null;
@@ -22,7 +55,9 @@ export function pollGamepad() {
             y: ry,
           }
         : false,
-    dash: gp.buttons[0]?.pressed ?? false,
     fire: gp.buttons[7]?.pressed ?? false,
+    activate_modules: equippedModules
+      .filter(({ keymap }) => gp.buttons[keymap]?.pressed)
+      .map(({ module_id }) => module_id),
   };
 }
