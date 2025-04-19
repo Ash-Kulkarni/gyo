@@ -7,10 +7,12 @@ import { pollGamepad, parseGamePad, equippedModules } from "./input.js";
 const handleEvents = (triggers) => {
   if (triggers.length === 0) return uiState.currentView;
   if (triggers.open_menu) {
-    console.log("Open menu event triggered");
-
     setCurrentView(
       uiState.currentView === VIEW.MAIN_MENU ? VIEW.PLAYING : VIEW.MAIN_MENU,
+    );
+  } else if (triggers.open_ship_editor) {
+    setCurrentView(
+      uiState.currentView === VIEW.EDITOR ? VIEW.PLAYING : VIEW.EDITOR,
     );
   }
   return uiState.currentView;
@@ -18,7 +20,6 @@ const handleEvents = (triggers) => {
 
 const gameLoop = () => {
   const gpInput = pollGamepad();
-  console.log({ parseGamePad: typeof parseGamePad });
   const [clientInput, eventTriggers] = parseGamePad(gpInput, equippedModules);
   sendInput(clientInput);
   const view = handleEvents(eventTriggers);

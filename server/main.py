@@ -62,8 +62,6 @@ async def broadcast_loop(players, bullets, enemies, scoreboard):
     TICK_RATE = 1 / FRAME_RATE
     while True:
         state = read_state(players, bullets, enemies)
-        print(f"📡 Scoreboard: {scoreboard}")
-
         tick_player_weapon_cooldowns(players, TICK_RATE)
         update_enemy_behavior(enemies, players)
         maybe_spawn_enemies(enemies)

@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "vite": "^6.3.2",
     "vitest": "^3.1.1"
   },
   "name": "gyo",
@@ -34,12 +35,12 @@
     "tinypool": "^1.0.2",
     "tinyrainbow": "^2.0.0",
     "tinyspy": "^3.0.2",
-    "vite": "^6.2.6",
     "vite-node": "^3.1.1",
     "why-is-node-running": "^2.3.0"
   },
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "dev": "vite"
   },
   "keywords": [],
   "author": "",

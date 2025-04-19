@@ -67,6 +67,7 @@ export const parseGamePad = (gp, modules) => {
 
   const eventTriggers = {
     open_menu: gp.buttons[START_KEY]?.pressed,
+    open_ship_editor: gp.buttons[SELECT_KEY]?.pressed,
   };
 
   return [clientInput, eventTriggers];

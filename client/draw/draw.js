@@ -89,7 +89,7 @@ function drawEnemies(enemies) {
     drawPolygon(e.x, e.y, e.a || 0, SHAPES[e.shape_id], e.colour);
   }
 }
-// const nodes = createSectorMap(30, 1200, 500);
+
 export function draw(view, state, input) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -117,7 +117,7 @@ export function draw(view, state, input) {
 
   drawBullets(bullets);
   ctx.restore();
-  drawUIOverlay(view, state, input);
+  drawUIOverlay(view, state, input, players[playerId]);
 }
 
 function drawMainMenu() {
@@ -134,20 +134,28 @@ function drawMainMenu() {
     canvas.height / 2 + 40,
   );
 }
-function drawUIOverlay(view) {
+function drawUIOverlay(view, state, input, player) {
   ctx.save();
   ctx.translate(0, 0);
 
   if (view === "main_menu") {
     drawMainMenu();
   } else if (view === "editor") {
-    // drawEditorUI();
+    drawShipEditorBackground();
+    drawShipEditorView(ctx, player);
   } else if (view === "shop") {
     // drawShopUI();
   } else console.warn("Unknown view:", view);
 
   ctx.restore();
 }
+
+const drawShipEditorBackground = () => {
+  ctx.save();
+  ctx.fillStyle = "rgba(20, 20, 30, 0.8)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+};
 
 function drawBullets(bullets) {
   for (const b of bullets) {
@@ -187,62 +195,6 @@ function drawBays(player, color) {
   }
 }
 
-function createSectorMap(count = 15, radius = 400, maxDist = 160) {
-  const nodes = [];
-
-  // Step 1: scatter non-overlapping nodes
-  while (nodes.length < count) {
-    const x = Math.random() * radius * 2 - radius;
-    const y = Math.random() * radius * 2 - radius;
-    if (nodes.every((n) => Math.hypot(n.x - x, n.y - y) > 50)) {
-      nodes.push({ id: `n${nodes.length}`, x, y, links: [] });
-    }
-  }
-
-  // Step 2: connect nearby nodes
-  for (const a of nodes) {
-    for (const b of nodes) {
-      if (a === b) continue;
-      const dist = Math.hypot(a.x - b.x, a.y - b.y);
-      if (dist < maxDist && !a.links.includes(b.id)) {
-        a.links.push(b.id);
-        b.links.push(a.id);
-      }
-    }
-  }
-
-  return nodes;
-}
-function drawSectorMap(ctx, nodes) {
-  ctx.save();
-  ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
-
-  // Draw edges
-  for (const n of nodes) {
-    for (const id of n.links) {
-      const t = nodes.find((n2) => n2.id === id);
-      ctx.beginPath();
-      ctx.moveTo(n.x, n.y);
-      ctx.lineTo(t.x, t.y);
-      ctx.strokeStyle = "#444";
-      ctx.stroke();
-    }
-  }
-
-  // Draw nodes
-  for (const n of nodes) {
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#0ff";
-    ctx.shadowColor = "#0ff";
-    ctx.shadowBlur = 10;
-    ctx.fill();
-    ctx.strokeStyle = "#000";
-    ctx.stroke();
-  }
-
-  ctx.restore();
-}
 function drawPolygon(x, y, angle, verts, color) {
   ctx.save();
   ctx.translate(x, y);
@@ -263,5 +215,69 @@ function drawPolygon(x, y, angle, verts, color) {
   ctx.lineWidth = 2;
 
   ctx.stroke();
+  ctx.restore();
+}
+
+export function drawShipEditorView(ctx, ship, inventory = undefined) {
+  const invX = 520;
+  const eqX = 850;
+  const panelY = 40;
+
+  const inv = inventory || [
+    { id: 1, name: "Laser Cannon" },
+    { id: 2, name: "Shield Generator" },
+    { id: 3, name: "Engine Module" },
+  ];
+
+  drawPanel(invX, panelY, 300, 300, "Inventory");
+  ctx.save();
+  ctx.fillStyle = "#ccc";
+  ctx.font = "14px sans-serif";
+  inv.forEach((item, i) => {
+    ctx.fillText(`${item.name} (id: ${item.id})`, 530, 70 + i * 20);
+  });
+  ctx.restore();
+
+  drawPanel(eqX, panelY, 300, 300, "Equipped");
+  ctx.save();
+  ctx.fillStyle = "#ccc";
+  ctx.font = "14px sans-serif";
+  ship.modules.forEach((mod, i) => {
+    ctx.fillText(
+      `${mod.name} → angle ${mod.offset_angle}°, dist ${mod.distance}`,
+      860,
+      70 + i * 20,
+    );
+  });
+  ctx.restore();
+
+  drawShip(ctx, ship);
+}
+
+function drawShip(ctx, shipState) {
+  // const centerX = canvas.width / 2;
+  // const centerX = 250;
+  // const centerY = canvas.height / 2;
+  //
+  // const baseAngle = shipState.a || 0;
+  // drawTriangle(centerX, centerY, baseAngle, "cyan");
+  // drawBays(shipState, "cyan");
+}
+function drawPanel(x, y, w, h, title) {
+  if (5 < 6) return;
+
+  ctx.save();
+  ctx.fillStyle = "rgba(15, 15, 20, 0.9)";
+  ctx.shadowColor = "#0ff";
+  ctx.shadowBlur = 8;
+  ctx.fillRect(x, y, w, h);
+
+  ctx.strokeStyle = "rgba(200,255,255,0.2)";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(x, y, w, h);
+
+  ctx.fillStyle = "#0ff";
+  ctx.font = "bold 16px sans-serif";
+  ctx.fillText(title, x + 12, y + 24);
   ctx.restore();
 }

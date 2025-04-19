@@ -26,7 +26,7 @@ export function setupSocket(startGameLoop) {
   socket.onmessage = (event) => {
     console.log("📩 Message from server:", event.data);
     state = JSON.parse(event.data);
-    console.log({ state });
+    // console.log({ state });
     if (state.type === "hello") {
       playerId = state.pid;
     }

@@ -32,14 +32,10 @@ def update_enemy_behavior(enemies, players):
 def respawn_dead_players(players):
 
     for pid, player in players.items():
-
         if player["hp"] <= 0:
-
             print(f"💀 Respawning player {pid}")
-
             player["x"], player["y"] = random.randint(
                 -2000, 2000), random.randint(-2000, 2000)
-
             player["hp"] = 10
 
 
@@ -56,7 +52,14 @@ def read_state(players, bullets, enemies):
 
     return {
         "players": {
-            pid: {"x": p["x"], "y": p["y"], "a": p["a"], "bays": p["bays"], 'hp': p['hp']} for pid, p in players.items()
+            pid: {
+                "x": p["x"],
+                "y": p["y"],
+                "a": p["a"],
+                "bays": p["bays"],
+                'hp': p['hp'],
+                'modules': p['modules']
+            } for pid, p in players.items()
         },
         'bullets': bullets,
         'enemies': enemies,
