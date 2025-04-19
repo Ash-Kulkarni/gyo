@@ -248,7 +248,7 @@ function drawPolygon(x, y, angle, verts, color) {
   ctx.restore();
 }
 
-export function drawShipEditorView(ctx, ship, inventory = undefined) {
+export function drawShipEditorView(ctx, ship, inventory) {
   const panelY = 40;
   const panelW = 320;
   const panelH = 360;
@@ -260,11 +260,7 @@ export function drawShipEditorView(ctx, ship, inventory = undefined) {
   const shipX = 160;
   const shipY = canvas.height / 2;
 
-  const inv = inventory || [
-    { id: 1, name: "Laser Cannon" },
-    { id: 2, name: "Shield Generator" },
-    { id: 3, name: "Engine Module" },
-  ];
+  const inv = inventory || [];
 
   drawPanel(shipX - 140, panelY, 280, panelH, "Ship Preview");
   drawShipPreview(ctx, ship, shipX, shipY);

@@ -12,9 +12,11 @@ const editorState = {
 };
 
 // TODO
-export function handleEditorInput(input, player) {
+export function handleEditorInput(input, player, inventory) {
   console.log("Editor input:", input);
   const mods = player.modules;
+  console.log(mods);
+  console.log(inventory);
 
   switch (editorState.mode) {
     case "inventory":

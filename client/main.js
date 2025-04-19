@@ -10,6 +10,12 @@ import {
   equippedModules,
 } from "./input.js";
 
+const playerInventory = [
+  { id: 1, name: "Laser Cannon" },
+  { id: 2, name: "Shield Generator" },
+  { id: 3, name: "Engine Module" },
+];
+
 const handleEventsPlaying = (triggers) => {
   if (triggers.length === 0) return uiState.currentView;
   if (triggers.open_menu) {
@@ -34,7 +40,7 @@ const handleEventsEditing = (triggers) => {
       uiState.currentView === VIEW.EDITOR ? VIEW.PLAYING : VIEW.EDITOR,
     );
   }
-  handleEditorInput(triggers, state.players[playerId]);
+  handleEditorInput(triggers, state.players[playerId], playerInventory);
 
   return uiState.currentView;
 };
