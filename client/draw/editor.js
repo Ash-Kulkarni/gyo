@@ -1,3 +1,5 @@
+import { EDITOR_KEYMAP } from "../input";
+
 const EDITOR_MODE = {
   INVENTORY: "inventory",
   EQUIPPED: "equipped",
@@ -20,6 +22,11 @@ export function handleEditorInput(input, player, inventory) {
 
   switch (editorState.mode) {
     case "inventory":
+      if (input[EDITOR_KEYMAP.A_KEY]) {
+        // A to equip
+        editorState.mode = "equipped_selection";
+        console.log("Equipping item");
+      }
       // up/down to change selection
       // A to equip
       // left/right to change equipped

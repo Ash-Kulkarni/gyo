@@ -73,7 +73,7 @@ export const parseGamePadPlaying = (gp, modules) => {
   return [clientInput, eventTriggers];
 };
 
-const EDITOR_KEYMAP = {
+export const EDITOR_KEYMAP = {
   DPAD_UP_KEY,
   DPAD_DOWN_KEY,
   DPAD_LEFT_KEY,
@@ -90,13 +90,10 @@ export const parseGamePadEditing = (gp) => {
     open_ship_editor: gp.buttons[SELECT_KEY]?.pressed,
   };
 
-  for (const [name, key] of Object.entries(EDITOR_KEYMAP)) {
+  for (const key of Object.values(EDITOR_KEYMAP)) {
     if (gp.buttons[key]?.pressed) {
-      eventTriggers[name] = true;
+      eventTriggers[key] = true;
     }
   }
-  return Object.fromEntries(
-    Object.entries(eventTriggers).filter(([key, value]) => Boolean(value)),
-  );
-  // return eventTriggers.filter(
+  return eventTriggers;
 };

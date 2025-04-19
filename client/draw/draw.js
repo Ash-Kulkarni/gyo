@@ -90,7 +90,7 @@ function drawEnemies(enemies) {
   }
 }
 
-export function draw(view, state, input) {
+export function draw(view, state, input, inventory) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const players = state.players || {};
@@ -118,7 +118,7 @@ export function draw(view, state, input) {
 
   drawBullets(bullets);
   ctx.restore();
-  drawUIOverlay(view, state, input, players[playerId]);
+  drawUIOverlay(view, state, input, players[playerId], inventory);
 }
 
 function drawMainMenu() {
@@ -135,7 +135,7 @@ function drawMainMenu() {
     canvas.height / 2 + 40,
   );
 }
-function drawUIOverlay(view, state, input, player) {
+function drawUIOverlay(view, state, input, player, inventory) {
   if (view === "playing") return;
   ctx.save();
   ctx.translate(0, 0);
@@ -144,7 +144,7 @@ function drawUIOverlay(view, state, input, player) {
     drawMainMenu();
   } else if (view === "editor") {
     drawShipEditorBackground();
-    drawShipEditorView(ctx, player);
+    drawShipEditorView(ctx, player, inventory);
   } else if (view === "shop") {
     // drawShopUI();
   } else console.warn("Unknown view:", view);
@@ -280,6 +280,7 @@ export function drawShipEditorView(ctx, ship, inventory) {
   ctx.save();
   ctx.fillStyle = "#bbb";
   ctx.font = "13px monospace";
+  console.log({ ship });
   ship.modules.forEach((mod, i) => {
     const y = panelY + 48 + i * lineHeight;
     ctx.fillText(

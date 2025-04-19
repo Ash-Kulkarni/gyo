@@ -78,7 +78,7 @@ const gameLoop = () => {
   }
   sendInput(clientInput);
   const view = handleEvents(eventTriggers);
-  draw(view, state, clientInput, equippedModules);
+  draw(view, state, clientInput, playerInventory);
   updateDebugOverlay(clientInput);
   requestAnimationFrame(gameLoop);
 };
