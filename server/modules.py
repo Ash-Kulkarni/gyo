@@ -51,10 +51,11 @@ QUAD_WEAPONS = [
 
 
 async def activate_quad(player):
-    original_weapons = player["bays"]
-    player["bays"] = QUAD_WEAPONS
-    await asyncio.sleep(5)
-    player["bays"] = original_weapons
+    ...
+    # original_mods = player["modules"]
+    # player["modules"] = QUAD_WEAPONS
+    # await asyncio.sleep(5)
+    # player["modules"] = original_mods
 
 
 SHIELD_MODULE = {

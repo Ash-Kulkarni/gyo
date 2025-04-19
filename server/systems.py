@@ -56,7 +56,6 @@ def read_state(players, bullets, enemies):
                 "x": p["x"],
                 "y": p["y"],
                 "a": p["a"],
-                "bays": p["bays"],
                 'hp': p['hp'],
                 'modules': p['modules']
             } for pid, p in players.items()
@@ -74,7 +73,8 @@ def remove_out_of_bounds_bullets(bullets):
 
 def tick_player_weapon_cooldowns(players, TICK_RATE):
     for p in players.values():
-        for weapon in p["bays"]:
+        weapons = [m for m in p['modules'] if m.get("weapon_id")]
+        for weapon in weapons:
             weapon["cooldown"] = max(0, weapon["cooldown"] - TICK_RATE)
 
 

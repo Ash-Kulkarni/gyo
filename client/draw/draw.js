@@ -109,8 +109,7 @@ export function draw(view, state, input, inventory) {
     const { x, y, a } = players[pid];
     const color = pid === playerId ? "cyan" : "magenta";
     drawTriangle(x, y, a || 0, color);
-    drawBaysAtPosition(players[pid], x, y, color);
-    // drawBays(players[pid], color);
+    drawModsAtPosition(players[pid], x, y, color);
     if (pid === playerId) {
       drawThrust(x, y, a || 0, input?.move);
     }
@@ -169,13 +168,13 @@ function drawBullets(bullets) {
     ctx.fill();
   }
 }
-function drawBaysAtPosition(player, x, y, color) {
-  const bays = player.bays || [];
+function drawModsAtPosition(player, x, y, color) {
+  const weapons = player.modules.filter(({ weapon_id }) => weapon_id) || [];
   const baseAngle = player.a || 0;
 
-  for (const bay of bays) {
-    const angleOffset = bay.offset_angle ?? 0;
-    const dist = bay.distance ?? 20;
+  for (const w of weapons) {
+    const angleOffset = w.offset_angle ?? 0;
+    const dist = w.distance ?? 20;
 
     const angle = baseAngle + angleOffset;
     const bx = x + Math.cos(angle) * dist;
@@ -192,34 +191,6 @@ function drawBaysAtPosition(player, x, y, color) {
     ctx.fillStyle = color;
     ctx.shadowColor = color;
     ctx.shadowBlur = 6;
-    ctx.fill();
-    ctx.restore();
-  }
-}
-
-function drawBays(player, color) {
-  const bays = player.bays || [];
-  const baseAngle = player.a || 0;
-
-  for (const bay of bays) {
-    const angleOffset = bay.offset_angle ?? 0;
-    const dist = bay.distance ?? 20;
-
-    const angle = baseAngle + angleOffset;
-    const bx = player.x + Math.cos(angle) * dist;
-    const by = player.y + Math.sin(angle) * dist;
-
-    ctx.save();
-    ctx.translate(bx, by);
-    ctx.rotate(baseAngle + Math.PI / 2);
-    ctx.beginPath();
-    ctx.moveTo(0, -3);
-    ctx.lineTo(4, 3);
-    ctx.lineTo(-4, 3);
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 8;
     ctx.fill();
     ctx.restore();
   }

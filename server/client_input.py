@@ -7,14 +7,15 @@ def handle_fire_all(player, angle, move_speed, bullets, pid):
     x, y = player["x"], player["y"]
     projectiles = []
 
-    for bay in player.get("bays", []):
-        if bay["cooldown"] > 0:
+    weapons = [m for m in player['modules'] if m.get("weapon_id")]
+    for w in weapons:
+        if w["cooldown"] > 0:
             continue
-        bay["cooldown"] = bay['max_cooldown']
+        w["cooldown"] = w['max_cooldown']
 
-        weapon_id = bay["weapon_id"]
-        offset_angle = bay.get("offset_angle", 0)
-        distance = bay.get("distance", 20)
+        weapon_id = w["weapon_id"]
+        offset_angle = w.get("offset_angle", 0)
+        distance = w.get("distance", 20)
 
         spawn_angle = angle + offset_angle
         bx = x + math.cos(spawn_angle) * distance

@@ -1,51 +1,69 @@
 from fastapi import WebSocket
 
 
-def default_bay():
+def default_weapons():
     return [
         {
+            "module_id": 10,
             "weapon_id": "rapid",
+            "name": "el rapido",
             "cooldown": 0,
             "max_cooldown": 0.2,
             "offset_angle": 0.2,
-            "distance": 20
+            "distance": 20,
+            "aim_angle": 0
         },
         {
+            "module_id": 11,
             "weapon_id": "rapid",
+            "name": "el rapido",
             "cooldown": 0,
             "max_cooldown": 0.2,
             "offset_angle": -0.2,
-            "distance": 20
+            "distance": 20,
+            "aim_angle": 0
         },
 
         {
+            "module_id": 12,
             "weapon_id": "rapid",
+            "name": "el rapido",
             "cooldown": 0,
             "max_cooldown": 0.2,
             "offset_angle": 1,
-            "distance": 50
+            "distance": 50,
+            "aim_angle": 0
         },
         {
+            "module_id": 13,
             "weapon_id": "rapid",
+            "name": "el rapido",
             "cooldown": 0,
             "max_cooldown": 0.2,
             "offset_angle": -1,
-            "distance": 50
+            "distance": 50,
+            "aim_angle": 0
         },
 
         {
+            "module_id": 14,
             "weapon_id": "spread",
+            "name": "la buerre",
             "cooldown": 0,
             "max_cooldown": 0.3,
             "offset_angle": 1.5,
-            "distance": 30
+            "distance": 30,
+            "aim_angle": 0
         },
         {
+            "module_id": 15,
             "weapon_id": "spread",
+            "name": "la buerre",
             "cooldown": 0,
             "max_cooldown": 0.3,
             "offset_angle": -1.5,
-            "distance": 30
+            "distance": 30,
+            "aim_angle": 0
         },
     ]
 
@@ -70,6 +88,7 @@ def default_modules():
             'cooldown': 0,
             'max_cooldown': 5,
         },
+        *default_weapons(),
 
     ]
 
@@ -83,7 +102,6 @@ def default_player(ws: WebSocket):
         "vy": 0,
         "a": 0,
         "speed": 5,
-        "bays": default_bay(),
         'hp': 10,
         "modules": default_modules()
     }
