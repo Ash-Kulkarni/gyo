@@ -109,7 +109,8 @@ export function draw(view, state, input) {
     const { x, y, a } = players[pid];
     const color = pid === playerId ? "cyan" : "magenta";
     drawTriangle(x, y, a || 0, color);
-    drawBays(players[pid], color);
+    drawBaysAtPosition(players[pid], x, y, color);
+    // drawBays(players[pid], color);
     if (pid === playerId) {
       drawThrust(x, y, a || 0, input?.move);
     }
@@ -167,6 +168,34 @@ function drawBullets(bullets) {
     ctx.fill();
   }
 }
+function drawBaysAtPosition(player, x, y, color) {
+  const bays = player.bays || [];
+  const baseAngle = player.a || 0;
+
+  for (const bay of bays) {
+    const angleOffset = bay.offset_angle ?? 0;
+    const dist = bay.distance ?? 20;
+
+    const angle = baseAngle + angleOffset;
+    const bx = x + Math.cos(angle) * dist;
+    const by = y + Math.sin(angle) * dist;
+
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate(baseAngle + Math.PI / 2);
+    ctx.beginPath();
+    ctx.moveTo(0, -3);
+    ctx.lineTo(4, 3);
+    ctx.lineTo(-4, 3);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 6;
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
 function drawBays(player, color) {
   const bays = player.bays || [];
   const baseAngle = player.a || 0;
@@ -219,9 +248,16 @@ function drawPolygon(x, y, angle, verts, color) {
 }
 
 export function drawShipEditorView(ctx, ship, inventory = undefined) {
-  const invX = 520;
-  const eqX = 850;
   const panelY = 40;
+  const panelW = 320;
+  const panelH = 360;
+  const padding = 16;
+  const lineHeight = 22;
+
+  const invX = 520;
+  const eqX = 880;
+  const shipX = 160;
+  const shipY = canvas.height / 2;
 
   const inv = inventory || [
     { id: 1, name: "Laser Cannon" },
@@ -229,43 +265,51 @@ export function drawShipEditorView(ctx, ship, inventory = undefined) {
     { id: 3, name: "Engine Module" },
   ];
 
-  drawPanel(invX, panelY, 300, 300, "Inventory");
+  drawPanel(shipX - 140, panelY, 280, panelH, "Ship Preview");
+  drawShipPreview(ctx, ship, shipX, shipY);
+
+  drawPanel(invX, panelY, panelW, panelH, "Inventory");
   ctx.save();
-  ctx.fillStyle = "#ccc";
-  ctx.font = "14px sans-serif";
+  ctx.fillStyle = "#bbb";
+  ctx.font = "13px monospace";
   inv.forEach((item, i) => {
-    ctx.fillText(`${item.name} (id: ${item.id})`, 530, 70 + i * 20);
+    const y = panelY + 48 + i * lineHeight;
+    ctx.fillText(`${item.name} (id: ${item.id})`, invX + padding, y);
+    drawDivider(invX + padding, y + 4, panelW - padding * 2);
   });
   ctx.restore();
 
-  drawPanel(eqX, panelY, 300, 300, "Equipped");
+  drawPanel(eqX, panelY, panelW, panelH, "Equipped");
   ctx.save();
-  ctx.fillStyle = "#ccc";
-  ctx.font = "14px sans-serif";
+  ctx.fillStyle = "#bbb";
+  ctx.font = "13px monospace";
   ship.modules.forEach((mod, i) => {
+    const y = panelY + 48 + i * lineHeight;
     ctx.fillText(
       `${mod.name} → angle ${mod.offset_angle}°, dist ${mod.distance}`,
-      860,
-      70 + i * 20,
+      eqX + padding,
+      y,
     );
+    drawDivider(eqX + padding, y + 4, panelW - padding * 2);
   });
   ctx.restore();
-
-  drawShip(ctx, ship);
 }
 
-function drawShip(ctx, shipState) {
-  // const centerX = canvas.width / 2;
-  // const centerX = 250;
-  // const centerY = canvas.height / 2;
-  //
-  // const baseAngle = shipState.a || 0;
-  // drawTriangle(centerX, centerY, baseAngle, "cyan");
-  // drawBays(shipState, "cyan");
+function drawDivider(x, y, width) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.05)";
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + width, y);
+  ctx.stroke();
+  ctx.restore();
 }
+function drawShipPreview(ctx, ship, centerX, centerY) {
+  drawTriangle(centerX, centerY, ship.a || 0, "cyan");
+  drawBaysAtPosition(ship, centerX, centerY, "cyan");
+}
+
 function drawPanel(x, y, w, h, title) {
-  if (5 < 6) return;
-
   ctx.save();
   ctx.fillStyle = "rgba(15, 15, 20, 0.9)";
   ctx.shadowColor = "#0ff";
