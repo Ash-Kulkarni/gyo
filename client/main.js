@@ -67,7 +67,7 @@ const gameLoop = () => {
       equippedModules,
     );
   } else if (uiState.currentView === VIEW.EDITOR) {
-    eventTriggers = parseGamePadEditing(gpInput);
+    [clientInput, eventTriggers] = parseGamePadEditing(gpInput);
   } else if (uiState.currentView === VIEW.MAIN_MENU) {
     [clientInput, eventTriggers] = parseGamePadPlaying(
       gpInput,

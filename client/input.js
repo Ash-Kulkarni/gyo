@@ -95,5 +95,11 @@ export const parseGamePadEditing = (gp) => {
       eventTriggers[key] = true;
     }
   }
-  return eventTriggers;
+
+  const { activate_modules, ...clientInput } = parseGamePadPlaying(
+    gp,
+    equippedModules,
+  )[0];
+
+  return [clientInput, eventTriggers];
 };
