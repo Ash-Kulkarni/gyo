@@ -60,6 +60,7 @@ def read_state(players, bullets, enemies):
         },
         'bullets': bullets,
         'enemies': enemies,
+        'scoreboard': {pid: {"kills": p["kills"]} for pid, p in players.items() if p.get("kills") is not None},
     }
 
 

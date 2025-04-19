@@ -2,7 +2,7 @@ import math
 from .modules import activate_modules
 
 
-def handle_fire_all(player, angle, move_speed, bullets):
+def handle_fire_all(player, angle, move_speed, bullets, pid):
 
     x, y = player["x"], player["y"]
     projectiles = []
@@ -27,7 +27,7 @@ def handle_fire_all(player, angle, move_speed, bullets):
                 "x": bx, "y": by,
                 "vx": math.cos(angle) * total_speed,
                 "vy": math.sin(angle) * total_speed,
-                "from": id(player),
+                "from": pid,
                 "radius": 2,
             })
 
@@ -40,7 +40,7 @@ def handle_fire_all(player, angle, move_speed, bullets):
                 projectiles.append({
                     "x": bx, "y": by,
                     "vx": sx, "vy": sy,
-                    "from": id(player),
+                    "from": pid,
                     "radius": 2,
                 })
 
@@ -72,5 +72,4 @@ async def handle_client_input(players, bullets, input_data, pid):
     players[pid]["x"] = max(-2000, min(players[pid]["x"], 2000))
     players[pid]["y"] = max(-2000, min(players[pid]["y"], 2000))
     if input_data.get("fire"):
-        print(f"Firing from {pid}")
-        handle_fire_all(players[pid], players[pid]['a'], move_speed, bullets)
+        handle_fire_all(players[pid], players[pid]['a'], move_speed, bullets, pid)

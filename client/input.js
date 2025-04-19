@@ -2,17 +2,6 @@ const A_KEY = 0;
 const B_KEY = 1;
 const X_KEY = 2;
 
-const DPAD_UP = 12;
-const DPAD_DOWN = 13;
-
-const moduleMapping = {
-  [A_KEY]: "boost",
-  [B_KEY]: "shield",
-  [X_KEY]: "shield",
-  [DPAD_UP]: "shield",
-  [DPAD_DOWN]: "shield",
-};
-
 const equippedModules = [
   {
     module_id: 1,

@@ -18,7 +18,7 @@ def spawn_enemy(x, y, type=EnemyType.CHASER.value):
         "vy": 0,
         "hp": 1,
         "type": type,
-        "speed": 1.5,
+        "speed": random.uniform(1, 4),
         "radius": 10,  # for hit detection
         "shape_id":  random.choice(list(Shape)).value,
         "colour": random.choice(ENEMY_COLOURS),

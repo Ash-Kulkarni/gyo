@@ -37,7 +37,9 @@ async def ws_endpoint(ws: WebSocket):
     players = app.state.players
     bullets = app.state.bullets
     enemies = app.state.enemies
+    scoreboard = app.state.scoreboard
     players[pid] = default_player(ws)
+    scoreboard[pid] = {"kills": 0}
 
     try:
         while True:
@@ -48,19 +50,19 @@ async def ws_endpoint(ws: WebSocket):
             await handle_client_input(players, bullets, input_data, pid)
 
             if is_testing():
-                await broadcast_loop(players, bullets, enemies)
+                await broadcast_loop(players, bullets, enemies, scoreboard)
 
     except WebSocketDisconnect:
         print(f"❌ Player disconnected: {pid}")
         del players[pid]
 
 
-async def broadcast_loop(players, bullets, enemies):
+async def broadcast_loop(players, bullets, enemies, scoreboard):
     FRAME_RATE = 60
     TICK_RATE = 1 / FRAME_RATE
     while True:
         state = read_state(players, bullets, enemies)
-        # print(f"Broadcasting state: {state}")
+        print(f"📡 Scoreboard: {scoreboard}")
 
         tick_player_weapon_cooldowns(players, TICK_RATE)
         update_enemy_behavior(enemies, players)
@@ -71,7 +73,7 @@ async def broadcast_loop(players, bullets, enemies):
         await asyncio.sleep(TICK_RATE)
         tick_bullets_velocity(bullets)
         [next_bullets, _dead_enemies] = check_bullet_collisions(
-            bullets, enemies)
+            bullets, enemies, scoreboard)
         bullets[:] = next_bullets
         remove_out_of_bounds_bullets(bullets)
         tick_modules(players, TICK_RATE)
@@ -83,6 +85,7 @@ async def startup_event():
     app.state.players = {}
     app.state.bullets = []
     app.state.enemies = []
+    app.state.scoreboard = {}
     asyncio.create_task(
-        broadcast_loop(app.state.players, app.state.bullets, app.state.enemies)
+        broadcast_loop(app.state.players, app.state.bullets, app.state.enemies, app.state.scoreboard)
     )
