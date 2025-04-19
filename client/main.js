@@ -1,10 +1,16 @@
 import { sendInput, setupSocket, socket, state, playerId } from "./net.js";
 import { draw } from "./draw/draw.js";
+import { handleEditorInput } from "./draw/editor.js";
 import { updateDebugOverlay } from "./debug.js";
 import { setCurrentView, VIEW, uiState } from "./state.js";
-import { pollGamepad, parseGamePad, equippedModules } from "./input.js";
+import {
+  pollGamepad,
+  parseGamePadPlaying,
+  parseGamePadEditing,
+  equippedModules,
+} from "./input.js";
 
-const handleEvents = (triggers) => {
+const handleEventsPlaying = (triggers) => {
   if (triggers.length === 0) return uiState.currentView;
   if (triggers.open_menu) {
     setCurrentView(
@@ -17,13 +23,56 @@ const handleEvents = (triggers) => {
   }
   return uiState.currentView;
 };
+const handleEventsEditing = (triggers) => {
+  if (triggers.length === 0) return uiState.currentView;
+  if (triggers.open_menu) {
+    setCurrentView(
+      uiState.currentView === VIEW.MAIN_MENU ? VIEW.PLAYING : VIEW.MAIN_MENU,
+    );
+  } else if (triggers.open_ship_editor) {
+    setCurrentView(
+      uiState.currentView === VIEW.EDITOR ? VIEW.PLAYING : VIEW.EDITOR,
+    );
+  }
+  handleEditorInput(triggers, state.players[playerId]);
+
+  return uiState.currentView;
+};
+
+const handleEvents = (triggers) => {
+  if (uiState.currentView === VIEW.PLAYING) {
+    return handleEventsPlaying(triggers);
+  } else if (uiState.currentView === VIEW.EDITOR) {
+    return handleEventsEditing(triggers);
+  } else if (uiState.currentView === VIEW.MAIN_MENU) {
+    return handleEventsPlaying(triggers);
+  } else {
+    console.warn("Unknown view:", uiState.currentView);
+  }
+};
 
 const gameLoop = () => {
   const gpInput = pollGamepad();
-  const [clientInput, eventTriggers] = parseGamePad(gpInput, equippedModules);
+  let clientInput = {};
+  let eventTriggers = {};
+  if (uiState.currentView === VIEW.PLAYING) {
+    [clientInput, eventTriggers] = parseGamePadPlaying(
+      gpInput,
+      equippedModules,
+    );
+  } else if (uiState.currentView === VIEW.EDITOR) {
+    eventTriggers = parseGamePadEditing(gpInput);
+  } else if (uiState.currentView === VIEW.MAIN_MENU) {
+    [clientInput, eventTriggers] = parseGamePadPlaying(
+      gpInput,
+      equippedModules,
+    );
+  } else {
+    console.warn("Unknown view:", uiState.currentView);
+  }
   sendInput(clientInput);
   const view = handleEvents(eventTriggers);
-  draw(view, state, clientInput);
+  draw(view, state, clientInput, equippedModules);
   updateDebugOverlay(clientInput);
   requestAnimationFrame(gameLoop);
 };

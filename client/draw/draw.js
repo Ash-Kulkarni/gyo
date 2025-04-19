@@ -136,6 +136,7 @@ function drawMainMenu() {
   );
 }
 function drawUIOverlay(view, state, input, player) {
+  if (view === "playing") return;
   ctx.save();
   ctx.translate(0, 0);
 

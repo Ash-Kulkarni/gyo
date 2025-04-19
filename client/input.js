@@ -36,7 +36,7 @@ export const equippedModules = [
 
 export const pollGamepad = () => navigator.getGamepads()[0] || null;
 
-export const parseGamePad = (gp, modules) => {
+export const parseGamePadPlaying = (gp, modules) => {
   if (!gp) return [false, false];
 
   const [lx, ly] = gp.axes;
@@ -71,4 +71,32 @@ export const parseGamePad = (gp, modules) => {
   };
 
   return [clientInput, eventTriggers];
+};
+
+const EDITOR_KEYMAP = {
+  DPAD_UP_KEY,
+  DPAD_DOWN_KEY,
+  DPAD_LEFT_KEY,
+  DPAD_RIGHT_KEY,
+  A_KEY,
+  B_KEY,
+};
+
+export const parseGamePadEditing = (gp) => {
+  if (!gp) return [false, false];
+
+  const eventTriggers = {
+    open_menu: gp.buttons[START_KEY]?.pressed,
+    open_ship_editor: gp.buttons[SELECT_KEY]?.pressed,
+  };
+
+  for (const [name, key] of Object.entries(EDITOR_KEYMAP)) {
+    if (gp.buttons[key]?.pressed) {
+      eventTriggers[name] = true;
+    }
+  }
+  return Object.fromEntries(
+    Object.entries(eventTriggers).filter(([key, value]) => Boolean(value)),
+  );
+  // return eventTriggers.filter(
 };
