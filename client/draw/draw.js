@@ -8,8 +8,8 @@ window.addEventListener("resize", () => {
 });
 
 const ctx = canvas.getContext("2d");
-import { playerId } from "./net.js";
-import { SHAPES } from "./shared/shapes.js";
+import { playerId } from "./../net.js";
+import { SHAPES } from "./../shared/shapes.js";
 
 export function drawTriangle(x, y, angle, color) {
   ctx.save();
@@ -90,7 +90,7 @@ function drawEnemies(enemies) {
   }
 }
 // const nodes = createSectorMap(30, 1200, 500);
-export function draw(state, input) {
+export function draw(view, state, input) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const players = state.players || {};
@@ -105,7 +105,6 @@ export function draw(state, input) {
   ctx.translate(-camX, -camY); // Shift world around player
   drawWorldBorder();
   drawEnemies(enemies);
-  // drawSectorMap(ctx, nodes);
   for (const pid in players) {
     const { x, y, a } = players[pid];
     const color = pid === playerId ? "cyan" : "magenta";
@@ -118,7 +117,38 @@ export function draw(state, input) {
 
   drawBullets(bullets);
   ctx.restore();
+  drawUIOverlay(view, state, input);
 }
+
+function drawMainMenu() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#111";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "white";
+  ctx.font = "24px sans-serif";
+  ctx.fillText("Paused", canvas.width / 2 - 40, canvas.height / 2);
+  ctx.fillText(
+    "Press START to return",
+    canvas.width / 2 - 100,
+    canvas.height / 2 + 40,
+  );
+}
+function drawUIOverlay(view) {
+  ctx.save();
+  ctx.translate(0, 0);
+
+  if (view === "main_menu") {
+    drawMainMenu();
+  } else if (view === "editor") {
+    // drawEditorUI();
+  } else if (view === "shop") {
+    // drawShopUI();
+  } else console.warn("Unknown view:", view);
+
+  ctx.restore();
+}
+
 function drawBullets(bullets) {
   for (const b of bullets) {
     ctx.beginPath();
