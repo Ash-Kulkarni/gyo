@@ -56,7 +56,7 @@ const handleEvents = (triggers) => {
     console.warn("Unknown view:", uiState.currentView);
   }
 };
-
+let prevTriggers = {};
 const gameLoop = () => {
   const gpInput = pollGamepad();
   let clientInput = {};
@@ -76,8 +76,15 @@ const gameLoop = () => {
   } else {
     console.warn("Unknown view:", uiState.currentView);
   }
+
+  const triggers = {};
+  for (const key in eventTriggers) {
+    triggers[key] = eventTriggers[key] && !prevTriggers[key];
+  }
+  prevTriggers = eventTriggers;
+
   sendInput(clientInput);
-  const view = handleEvents(eventTriggers);
+  const view = handleEvents(triggers);
   draw(view, state, clientInput, playerInventory);
   updateDebugOverlay(clientInput);
   requestAnimationFrame(gameLoop);
