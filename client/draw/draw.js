@@ -260,10 +260,9 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
   const eqX = canvas.width - panelW - 40;
   const { mode, inventoryIndex, equippedIndex } = editorState;
 
-  // Inventory panel
+  // Inventory pane||l
   drawPanel(invX, panelY, panelW, panelH, "Inventory");
   ctx.save();
-  ctx.fillStyle = "#bbb";
   ctx.font = "13px monospace";
   inventory.forEach((item, i) => {
     const y = panelY + 42 + i * lineHeight;
@@ -271,6 +270,7 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
       ctx.fillStyle = "rgba(200, 200, 200, 0.15)";
       ctx.fillRect(invX + padding / 2, y - 12, panelW - padding, lineHeight);
     }
+    ctx.fillStyle = "#bbb";
     ctx.fillText(`${item.name} (id: ${item.id})`, invX + padding, y);
     drawDivider(invX + padding, y + 4, panelW - padding * 2);
   });
@@ -279,7 +279,6 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
   // Equipped panel
   drawPanel(eqX, panelY, panelW, panelH, "Equipped");
   ctx.save();
-  ctx.fillStyle = "#bbb";
   ctx.font = "13px monospace";
   ship.modules.forEach((mod, i) => {
     const y = panelY + 42 + i * lineHeight;
@@ -292,6 +291,7 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
       ctx.fillStyle = "rgba(200, 200, 200, 0.15)";
       ctx.fillRect(eqX + padding / 2, y - 12, panelW - padding, lineHeight);
     }
+    ctx.fillStyle = "#bbb";
     ctx.fillText(
       `${mod.name} → θ:${mod.offset_angle?.toFixed(1)}°, r:${mod.distance}`,
       eqX + padding,

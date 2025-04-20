@@ -63,7 +63,7 @@ export function handleEditorInput(input, player, inventory) {
       } else if (input[EDITOR_KEYMAP.DPAD_DOWN_KEY]) {
         editorState.inventoryIndex =
           (editorState.inventoryIndex + 1) % inventory.length;
-      } else if (input[EDITOR_KEYMAP.RIGHT_BUMPER_KEY]) {
+      } else if (input[EDITOR_KEYMAP.DPAD_RIGHT_KEY]) {
         editorState.mode = EDITOR_MODE.EQUIPPED;
       }
       break;
@@ -84,7 +84,7 @@ export function handleEditorInput(input, player, inventory) {
           equippedModules.length;
       } else if (input[EDITOR_KEYMAP.B_KEY]) {
         unequipModule(equippedModules, inventory, editorState.equippedIndex);
-      } else if (input[EDITOR_KEYMAP.LEFT_BUMPER_KEY]) {
+      } else if (input[EDITOR_KEYMAP.DPAD_LEFT_KEY]) {
         editorState.mode = EDITOR_MODE.INVENTORY;
       }
       break;
