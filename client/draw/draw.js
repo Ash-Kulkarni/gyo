@@ -1,6 +1,7 @@
 const canvas = document.getElementById("game");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+import { editorState, EDITOR_MODE } from "./editor.js";
 
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
@@ -257,6 +258,7 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
 
   const invX = 40;
   const eqX = canvas.width - panelW - 40;
+  const { mode, inventoryIndex, equippedIndex } = editorState;
 
   // Inventory panel
   drawPanel(invX, panelY, panelW, panelH, "Inventory");
@@ -265,6 +267,10 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
   ctx.font = "13px monospace";
   inventory.forEach((item, i) => {
     const y = panelY + 42 + i * lineHeight;
+    if (mode === EDITOR_MODE.INVENTORY && i === inventoryIndex) {
+      ctx.fillStyle = "rgba(200, 200, 200, 0.15)";
+      ctx.fillRect(invX + padding / 2, y - 12, panelW - padding, lineHeight);
+    }
     ctx.fillText(`${item.name} (id: ${item.id})`, invX + padding, y);
     drawDivider(invX + padding, y + 4, panelW - padding * 2);
   });
@@ -277,6 +283,15 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
   ctx.font = "13px monospace";
   ship.modules.forEach((mod, i) => {
     const y = panelY + 42 + i * lineHeight;
+    if (
+      (mode === EDITOR_MODE.EQUIPPED ||
+        mode === EDITOR_MODE.POSITION_EDIT ||
+        mode === EDITOR_MODE.AIM_EDIT) &&
+      i === equippedIndex
+    ) {
+      ctx.fillStyle = "rgba(200, 200, 200, 0.15)";
+      ctx.fillRect(eqX + padding / 2, y - 12, panelW - padding, lineHeight);
+    }
     ctx.fillText(
       `${mod.name} → θ:${mod.offset_angle?.toFixed(1)}°, r:${mod.distance}`,
       eqX + padding,

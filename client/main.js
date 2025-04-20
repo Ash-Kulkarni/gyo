@@ -56,6 +56,9 @@ const handleEvents = (triggers) => {
     console.warn("Unknown view:", uiState.currentView);
   }
 };
+
+// todo: debounce module activations
+// todo: switch 'fire' to start and stop fire events
 let prevTriggers = {};
 const gameLoop = () => {
   const gpInput = pollGamepad();

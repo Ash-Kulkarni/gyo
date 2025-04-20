@@ -1,14 +1,14 @@
 import { EDITOR_KEYMAP } from "../input";
 import { sendInput } from "../net.js";
 
-const EDITOR_MODE = {
+export const EDITOR_MODE = {
   INVENTORY: "inventory",
   EQUIPPED: "equipped",
   POSITION_EDIT: "position_edit",
   AIM_EDIT: "aim_edit",
 };
 
-const editorState = {
+export const editorState = {
   mode: EDITOR_MODE.INVENTORY,
   inventoryIndex: 0,
   equippedIndex: 0,
@@ -23,6 +23,11 @@ const equipModuleFromInventory = (
   inventoryIndex,
 ) => {
   console.log("equipModuleFromInventory");
+  const item = inventory[inventoryIndex];
+  if (!item) return;
+  equippedModules.push(item);
+  // equippedModules.push({...item})
+  sendInput({ event: "equip_module", module_id: item.module_id });
 };
 const unequipModule = (equippedModules, inventory, equippedIndex) => {
   console.log("unequipModule");
@@ -70,10 +75,10 @@ export function handleEditorInput(input, player, inventory) {
       }
       if (input[EDITOR_KEYMAP.A_KEY]) {
         editorState.mode = EDITOR_MODE.POSITION_EDIT;
-      } else if (input[EDITOR_KEYMAP.DPAD_RIGHT_KEY]) {
+      } else if (input[EDITOR_KEYMAP.DPAD_DOWN_KEY]) {
         editorState.equippedIndex =
           (editorState.equippedIndex + 1) % equippedModules.length;
-      } else if (input[EDITOR_KEYMAP.DPAD_LEFT_KEY]) {
+      } else if (input[EDITOR_KEYMAP.DPAD_UP_KEY]) {
         editorState.equippedIndex =
           (editorState.equippedIndex - 1 + equippedModules.length) %
           equippedModules.length;
