@@ -44,6 +44,9 @@ export const parseGamePadPlaying = (gp, modules) => {
   const moveMag = Math.hypot(lx, ly);
   const aimMag = Math.hypot(rx, ry);
 
+  const activeModuleIds = modules
+    .filter(({ keymap }) => gp.buttons[keymap]?.pressed)
+    .map(({ module_id }) => module_id);
   const clientInput = {
     move:
       moveMag > 0.2
@@ -60,9 +63,7 @@ export const parseGamePadPlaying = (gp, modules) => {
           }
         : false,
     fire: gp.buttons[RIGHT_TRIGGER_KEY]?.pressed ?? false,
-    activate_modules: modules
-      .filter(({ keymap }) => gp.buttons[keymap]?.pressed)
-      .map(({ module_id }) => module_id),
+    activate_modules: activeModuleIds.length > 0 ? activeModuleIds : false,
   };
 
   const eventTriggers = {

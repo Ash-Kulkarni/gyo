@@ -75,3 +75,4 @@ async def handle_client_input(players, bullets, input_data, pid):
     if input_data.get("fire"):
         handle_fire_all(players[pid], players[pid]
                         ['a'], move_speed, bullets, pid)
+    print(input_data)
