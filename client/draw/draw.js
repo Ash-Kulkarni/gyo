@@ -171,7 +171,7 @@ function drawBullets(bullets) {
   }
 }
 function drawModsAtPosition(player, x, y, color) {
-  const weapons = player.modules.filter(({ weapon_id }) => weapon_id) || [];
+  const weapons = player.modules;
   const baseAngle = player.a || 0;
   const { mode, equippedIndex } = editorState;
 

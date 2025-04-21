@@ -29,10 +29,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -105,9 +105,9 @@ async def startup_event():
     app.state.scoreboard = {}
     asyncio.create_task(
         broadcast_loop(
-                app.state.players,
-                app.state.bullets,
-                app.state.enemies,
-                app.state.scoreboard,
+            app.state.players,
+            app.state.bullets,
+            app.state.enemies,
+            app.state.scoreboard,
         )
     )

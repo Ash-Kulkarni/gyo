@@ -118,14 +118,25 @@ export function handleEditorInput(input, player, inventory) {
       break;
 
     case EDITOR_MODE.POSITION_EDIT:
+      const selectedModule = player.modules[editorState.equippedIndex];
+      const selectedModuleDistance = selectedModule.distance;
+      const selectedModuleOffsetAngle = selectedModule.offset_angle;
       if (input[EDITOR_KEYMAP.DPAD_UP_KEY]) {
-        editModulePosition(equippedModules, editorState.equippedIndex, "up");
+        editModulePosition(equippedModules, editorState.equippedIndex, {
+          distance: selectedModuleDistance + 1,
+        });
       } else if (input[EDITOR_KEYMAP.DPAD_DOWN_KEY]) {
-        editModulePosition(equippedModules, editorState.equippedIndex, "down");
+        editModulePosition(equippedModules, editorState.equippedIndex, {
+          distance: selectedModuleDistance - 1,
+        });
       } else if (input[EDITOR_KEYMAP.DPAD_LEFT_KEY]) {
-        editModulePosition(equippedModules, editorState.equippedIndex, "left");
+        editModulePosition(equippedModules, editorState.equippedIndex, {
+          offset_angle: selectedModuleOffsetAngle - 0.1,
+        });
       } else if (input[EDITOR_KEYMAP.DPAD_RIGHT_KEY]) {
-        editModulePosition(equippedModules, editorState.equippedIndex, "right");
+        editModulePosition(equippedModules, editorState.equippedIndex, {
+          offset_angle: selectedModuleOffsetAngle + 0.1,
+        });
       } else if (input[EDITOR_KEYMAP.B_KEY]) {
         editorState.mode = EDITOR_MODE.EQUIPPED;
       } else if (input[EDITOR_KEYMAP.A_KEY]) {

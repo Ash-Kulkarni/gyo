@@ -112,6 +112,15 @@ def handle_editor_input(
                 m for m in player["modules"] if m["module_id"] != module_id]
         case "edit_module_position":
             module_id = get_module_id(input_data)
+            mod = next((m for m in player["modules"] if m["module_id"] == module_id), None)
+            if mod is None:
+                return
+            current = mod['distance']
+            new = input_data.get("data", {}).get("distance", None)
+            print(f"current: {current}, new: {new}")
+
+            mod['distance'] = input_data.get("data", {}).get("distance", mod['distance'])
+
             # equipped_index = input_data.get("equipped_index")
             # position = input_data.get("position")
             # editModulePosition(player["modules"], equipped_index, position)

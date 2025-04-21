@@ -75,18 +75,27 @@ def default_modules():
             'name': 'boost',
             'cooldown': 0,
             'max_cooldown': 5,
+            "offset_angle": 0.8,
+            "distance": 30,
+            "aim_angle": 0
         },
         {
             'module_id': 2,
             'name': 'boost',
             'cooldown': 0,
             'max_cooldown': 5,
+            "offset_angle": -0.8,
+            "distance": 30,
+            "aim_angle": 0
         },
         {
             'module_id': 3,
             'name': 'shield',
             'cooldown': 0,
             'max_cooldown': 5,
+            "offset_angle": -3.5,
+            "distance": 30,
+            "aim_angle": 0
         },
         *default_weapons(),
 
