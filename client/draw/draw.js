@@ -325,7 +325,13 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
   drawPanel(invX, panelY, panelW, panelH, "Inventory");
   ctx.save();
   ctx.font = "13px monospace";
-  inventory.forEach((item, i) => {
+
+  const equippedModules = ship.modules.map(({ module_id }) => module_id);
+  const unequipedInventory = inventory.filter(
+    ({ module_id }) => !equippedModules.includes(module_id),
+  );
+
+  unequipedInventory.forEach((item, i) => {
     const y = panelY + 42 + i * lineHeight;
     if (mode === EDITOR_MODE.INVENTORY && i === inventoryIndex) {
       ctx.fillStyle = "rgba(200, 200, 200, 0.15)";

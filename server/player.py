@@ -136,7 +136,7 @@ class MockInventory:
     def default_inventory(self):
         return [
             {
-                "module_id": 10,
+                "module_id": 20,
                 "weapon_id": "rapid",
                 "name": "inv weapon 1",
                 "cooldown": 0,
@@ -146,7 +146,7 @@ class MockInventory:
                 "aim_angle": 0
             },
             {
-                "module_id": 11,
+                "module_id": 21,
                 "weapon_id": "rapid",
                 "name": "inv weapon 2",
                 "cooldown": 0,
@@ -154,49 +154,8 @@ class MockInventory:
                 "offset_angle": -0.2,
                 "distance": 20,
                 "aim_angle": 0
-            },
+            }, *default_weapons(), *default_modules()
 
-            {
-                "module_id": 12,
-                "weapon_id": "rapid",
-                "name": "inv weapon 3",
-                "cooldown": 0,
-                "max_cooldown": 0.2,
-                "offset_angle": 1,
-                "distance": 50,
-                "aim_angle": 0
-            },
-            {
-                "module_id": 13,
-                "weapon_id": "rapid",
-                "name": "inv weapon 4",
-                "cooldown": 0,
-                "max_cooldown": 0.2,
-                "offset_angle": -1,
-                "distance": 50,
-                "aim_angle": 0
-            },
-
-            {
-                "module_id": 14,
-                "weapon_id": "spread",
-                "name": "inv weapon 5",
-                "cooldown": 0,
-                "max_cooldown": 0.3,
-                "offset_angle": 1.5,
-                "distance": 30,
-                "aim_angle": 0
-            },
-            {
-                "module_id": 15,
-                "weapon_id": "spread",
-                "name": "inv weapon 6",
-                "cooldown": 0,
-                "max_cooldown": 0.3,
-                "offset_angle": -1.5,
-                "distance": 30,
-                "aim_angle": 0
-            },
         ]
 
 mock_inventory = MockInventory()

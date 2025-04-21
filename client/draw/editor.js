@@ -19,24 +19,39 @@ export const editorState = {
 
 const equipModuleFromInventory = (
   equippedModules,
-  inventory,
+  unequippedInventory,
   inventoryIndex,
 ) => {
   console.log("equipModuleFromInventory");
-  // const item = inventory[inventoryIndex];
-  // if (!item) return;
-  // equippedModules.push(item);
-  // equippedModules.push({...item})
   sendInput({
     event: "equip_module",
-    module_id: inventory[inventoryIndex].module_id,
+    module_id: unequippedInventory[inventoryIndex].module_id,
   });
+  // update inventoryIndex so that it doesn't go out of bounds
+  if (
+    unequippedInventory.length > 1 &&
+    inventoryIndex >= unequippedInventory.length - 1
+  ) {
+    editorState.inventoryIndex =
+      (inventoryIndex - 1 + unequippedInventory.length) %
+      unequippedInventory.length;
+  }
 };
 const unequipModule = (equippedModules, inventory, equippedIndex) => {
+  console.log({ equippedModules, equippedIndex });
+  console.log({ m: equippedModules[equippedIndex] });
   sendInput({
     event: "unequip_module",
     module_id: equippedModules[equippedIndex].module_id,
   });
+  // update equippedIndex so that it doesn't go out of bounds
+  if (
+    equippedModules.length > 1 &&
+    equippedIndex >= equippedModules.length - 1
+  ) {
+    editorState.equippedIndex =
+      (equippedIndex - 1 + equippedModules.length) % equippedModules.length;
+  }
   console.log("unequipModule");
 };
 const editModulePosition = (
@@ -70,31 +85,28 @@ const saveModule = (equippedModules, equippedIndex) => {
   console.log("saveModule");
 };
 
-export function handleEditorInput(input, player, inventory) {
+export function handleEditorInput(input, player, unequippedInventory) {
   // console.log("Editor input:", input);
   const equippedModules = player.modules;
-  // console.log(equippedModules);
-  // console.log(inventory);
-  const selectedModule = player.modules[editorState.equippedIndex];
-  const selectedModuleDistance = selectedModule.distance;
-  const selectedModuleOffsetAngle = selectedModule.offset_angle;
-  const selectedModuleAimAngle = selectedModule.aim_angle;
+  const selectedModule = player.modules.length
+    ? player.modules[editorState.equippedIndex]
+    : null;
 
   switch (editorState.mode) {
     case EDITOR_MODE.INVENTORY:
       if (input[EDITOR_KEYMAP.A_KEY]) {
         equipModuleFromInventory(
           equippedModules,
-          inventory,
+          unequippedInventory,
           editorState.inventoryIndex,
         );
       } else if (input[EDITOR_KEYMAP.DPAD_UP_KEY]) {
         editorState.inventoryIndex =
-          (editorState.inventoryIndex - 1 + inventory.length) %
-          inventory.length;
+          (editorState.inventoryIndex - 1 + unequippedInventory.length) %
+          unequippedInventory.length;
       } else if (input[EDITOR_KEYMAP.DPAD_DOWN_KEY]) {
         editorState.inventoryIndex =
-          (editorState.inventoryIndex + 1) % inventory.length;
+          (editorState.inventoryIndex + 1) % unequippedInventory.length;
       } else if (input[EDITOR_KEYMAP.DPAD_RIGHT_KEY]) {
         editorState.mode = EDITOR_MODE.EQUIPPED;
       }
@@ -115,7 +127,11 @@ export function handleEditorInput(input, player, inventory) {
           (editorState.equippedIndex - 1 + equippedModules.length) %
           equippedModules.length;
       } else if (input[EDITOR_KEYMAP.B_KEY]) {
-        unequipModule(equippedModules, inventory, editorState.equippedIndex);
+        unequipModule(
+          equippedModules,
+          unequippedInventory,
+          editorState.equippedIndex,
+        );
       } else if (input[EDITOR_KEYMAP.DPAD_LEFT_KEY]) {
         editorState.mode = EDITOR_MODE.INVENTORY;
       }
@@ -124,19 +140,19 @@ export function handleEditorInput(input, player, inventory) {
     case EDITOR_MODE.POSITION_EDIT:
       if (input[EDITOR_KEYMAP.DPAD_UP_KEY]) {
         editModulePosition(equippedModules, editorState.equippedIndex, {
-          distance: selectedModuleDistance + 1,
+          distance: selectedModule.distance + 1,
         });
       } else if (input[EDITOR_KEYMAP.DPAD_DOWN_KEY]) {
         editModulePosition(equippedModules, editorState.equippedIndex, {
-          distance: selectedModuleDistance - 1,
+          distance: selectedModule.distance - 1,
         });
       } else if (input[EDITOR_KEYMAP.DPAD_LEFT_KEY]) {
         editModulePosition(equippedModules, editorState.equippedIndex, {
-          offset_angle: selectedModuleOffsetAngle - 0.1,
+          offset_angle: selectedModule.offset_angle - 0.1,
         });
       } else if (input[EDITOR_KEYMAP.DPAD_RIGHT_KEY]) {
         editModulePosition(equippedModules, editorState.equippedIndex, {
-          offset_angle: selectedModuleOffsetAngle + 0.1,
+          offset_angle: selectedModule.offset_angle + 0.1,
         });
       } else if (input[EDITOR_KEYMAP.B_KEY]) {
         editorState.mode = EDITOR_MODE.EQUIPPED;
@@ -148,11 +164,11 @@ export function handleEditorInput(input, player, inventory) {
     case EDITOR_MODE.AIM_EDIT:
       if (input[EDITOR_KEYMAP.DPAD_LEFT_KEY]) {
         editModuleAim(equippedModules, editorState.equippedIndex, {
-          aim_angle: selectedModuleAimAngle - 0.1,
+          aim_angle: selectedModule.aim_angle - 0.1,
         });
       } else if (input[EDITOR_KEYMAP.DPAD_RIGHT_KEY]) {
         editModuleAim(equippedModules, editorState.equippedIndex, {
-          aim_angle: selectedModuleAimAngle + 0.1,
+          aim_angle: selectedModule.aim_angle + 0.1,
         });
       } else if (input[EDITOR_KEYMAP.B_KEY]) {
         editorState.mode = EDITOR_MODE.POSITION_EDIT;

@@ -57,7 +57,13 @@ const handleEventsEditing = (triggers) => {
       uiState.currentView === VIEW.EDITOR ? VIEW.PLAYING : VIEW.EDITOR,
     );
   }
-  handleEditorInput(triggers, state.players[playerId], playerInventory);
+  const player = state.players[playerId];
+  const equippedModuleIds = player.modules.map(({ module_id }) => module_id);
+  console.log({ equippedModuleIds });
+  const unequippedInventory = playerInventory.filter(
+    ({ module_id }) => !equippedModuleIds.includes(module_id),
+  );
+  handleEditorInput(triggers, player, unequippedInventory);
 
   return uiState.currentView;
 };
