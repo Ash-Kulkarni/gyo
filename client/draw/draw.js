@@ -2,6 +2,7 @@ const canvas = document.getElementById("game");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 import { editorState, EDITOR_MODE } from "./editor.js";
+import { uiState, VIEW } from "../state.js";
 
 window.addEventListener("resize", () => {
   canvas.width = window.innerWidth;
@@ -172,10 +173,23 @@ function drawBullets(bullets) {
 function drawModsAtPosition(player, x, y, color) {
   const weapons = player.modules.filter(({ weapon_id }) => weapon_id) || [];
   const baseAngle = player.a || 0;
+  const { mode, equippedIndex } = editorState;
 
-  for (const w of weapons) {
+  const inModuleSelect =
+    uiState.currentView === VIEW.EDITOR &&
+    (mode === EDITOR_MODE.EQUIPPED ||
+      mode === EDITOR_MODE.POSITION_EDIT ||
+      mode === EDITOR_MODE.AIM_EDIT);
+
+  weapons.forEach((w, i) => {
+    console.log({ w });
     const angleOffset = w.offset_angle ?? 0;
     const dist = w.distance ?? 20;
+
+    const cooldown = w.cooldown;
+    const maxCooldown = w.max_cooldown;
+
+    const aimAngle = w.aim_angle ?? 0;
 
     const angle = baseAngle + angleOffset;
     const bx = x + Math.cos(angle) * dist;
@@ -189,12 +203,58 @@ function drawModsAtPosition(player, x, y, color) {
     ctx.lineTo(4, 3);
     ctx.lineTo(-4, 3);
     ctx.closePath();
-    ctx.fillStyle = color;
+
+    const selectedColor = "rgba(255, 255, 255, 0.5)";
+
+    const isSelected = i === equippedIndex && inModuleSelect;
+    ctx.fillStyle = isSelected ? selectedColor : color;
+    ctx.shadowBlur = isSelected ? 8 : 4;
     ctx.shadowColor = color;
-    ctx.shadowBlur = 6;
     ctx.fill();
     ctx.restore();
-  }
+
+    if (isSelected) {
+      // draw a halo circle around it
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(bx, by, dist * 0.2 + 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // POSITION_EDIT: show distance & offset_angle
+      if (mode === EDITOR_MODE.POSITION_EDIT) {
+        ctx.save();
+        ctx.fillStyle = "#ddd";
+        ctx.font = "12px monospace";
+        ctx.fillText(`r:${dist}`, bx + 10, by - 5);
+        ctx.fillText(
+          `θ:${((angleOffset * 180) / Math.PI).toFixed(0)}°`,
+          bx + 10,
+          by + 12,
+        );
+        ctx.restore();
+      }
+
+      // AIM_EDIT: draw a small dashed line along bay.aim_angle
+      if (mode === EDITOR_MODE.AIM_EDIT) {
+        const lineAngle = aimAngle + baseAngle;
+        ctx.save();
+        ctx.strokeStyle = "#ddd";
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(
+          bx + Math.cos(lineAngle) * 20,
+          by + Math.sin(lineAngle) * 20,
+        );
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
+    }
+  });
 }
 
 function drawPolygon(x, y, angle, verts, color) {
@@ -264,7 +324,6 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
   drawPanel(invX, panelY, panelW, panelH, "Inventory");
   ctx.save();
   ctx.font = "13px monospace";
-  console.log({ inventory });
   inventory.forEach((item, i) => {
     const y = panelY + 42 + i * lineHeight;
     if (mode === EDITOR_MODE.INVENTORY && i === inventoryIndex) {
