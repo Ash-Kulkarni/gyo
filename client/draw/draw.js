@@ -46,6 +46,7 @@ export function drawTriangle(x, y, angle, color) {
   ctx.shadowBlur = 15;
   ctx.shadowOffsetX = Math.cos(angle) * 2;
   ctx.shadowOffsetY = Math.sin(angle) * 2;
+  ctx.globalAlpha = 0.8;
   ctx.fill();
   ctx.restore();
 }
@@ -127,9 +128,8 @@ export function draw(view, state, input, inventory) {
   drawWorldBorder();
   drawEnemies(enemies);
   for (const pid in players) {
-    const { x, y, a } = players[pid];
-    const color = pid === playerId ? "cyan" : "magenta";
-    drawTriangle(x, y, a || 0, color);
+    const { x, y, a, colour } = players[pid];
+    drawTriangle(x, y, a || 0, colour);
     drawModsAtPosition(players[pid]);
     if (pid === playerId) {
       drawThrust(x, y, a || 0, input?.move);
@@ -212,9 +212,7 @@ function drawModsAtPosition(player) {
     ctx.rotate(aimAngle + Math.PI / 2);
 
     ctx.globalAlpha = 1 - (m.cooldown || 0) / (m.max_cooldown || 1);
-    ctx.fillStyle = isSelected
-      ? "rgba(255, 255, 255, 0.6)"
-      : "rgba(200, 200, 200, 0.4)";
+    ctx.fillStyle = isSelected ? "rgba(255, 255, 255, 0.6)" : m.colour;
     ctx.shadowBlur = isSelected ? 12 : 4;
     ctx.shadowColor = "#000";
 

@@ -57,6 +57,7 @@ def read_state(players, bullets, enemies):
                 "y": p["y"],
                 "a": p["a"],
                 'hp': p['hp'],
+                'colour': p['colour'],
                 'modules': p['modules']
             } for pid, p in players.items()
         },
