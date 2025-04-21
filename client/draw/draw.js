@@ -264,6 +264,7 @@ export function drawShipEditorView(ctx, ship, inventory = []) {
   drawPanel(invX, panelY, panelW, panelH, "Inventory");
   ctx.save();
   ctx.font = "13px monospace";
+  console.log({ inventory });
   inventory.forEach((item, i) => {
     const y = panelY + 42 + i * lineHeight;
     if (mode === EDITOR_MODE.INVENTORY && i === inventoryIndex) {

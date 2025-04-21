@@ -1,10 +1,11 @@
 from fastapi.websockets import WebSocketDisconnect
 from fastapi import FastAPI, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
 import json
 import asyncio
 import os
 
-from .player import default_player
+from .player import default_player, mock_inventory
 from .client_input import handle_client_input
 from .systems import (
     read_state,
@@ -25,6 +26,24 @@ def is_testing():
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+)
+
+
+@app.get("/inventory/{pid}", status_code=200)
+async def get_inventory(pid: str):
+    inventory = mock_inventory.get(pid)
+    if not inventory:
+        print(f"Inventory not found for player {pid}")
+        return {"error": "Inventory not found"}
+    print(f"Inventory for player {pid}: {inventory}")
+    return inventory
 
 
 @app.websocket("/ws")
@@ -47,7 +66,7 @@ async def ws_endpoint(ws: WebSocket):
             input_data = json.loads(data)
             if not input_data:
                 continue
-            await handle_client_input(players, bullets, input_data, pid)
+            await handle_client_input(players, bullets, input_data, pid, inventory=mock_inventory.get(pid))
 
             if is_testing():
                 await broadcast_loop(players, bullets, enemies, scoreboard)
@@ -85,5 +104,10 @@ async def startup_event():
     app.state.enemies = []
     app.state.scoreboard = {}
     asyncio.create_task(
-        broadcast_loop(app.state.players, app.state.bullets, app.state.enemies, app.state.scoreboard)
+        broadcast_loop(
+                app.state.players,
+                app.state.bullets,
+                app.state.enemies,
+                app.state.scoreboard,
+        )
     )

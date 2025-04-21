@@ -23,22 +23,50 @@ const equipModuleFromInventory = (
   inventoryIndex,
 ) => {
   console.log("equipModuleFromInventory");
-  const item = inventory[inventoryIndex];
-  if (!item) return;
-  equippedModules.push(item);
+  // const item = inventory[inventoryIndex];
+  // if (!item) return;
+  // equippedModules.push(item);
   // equippedModules.push({...item})
-  sendInput({ event: "equip_module", module_id: item.module_id });
+  sendInput({
+    event: "equip_module",
+    module_id: inventory[inventoryIndex].module_id,
+  });
 };
 const unequipModule = (equippedModules, inventory, equippedIndex) => {
+  sendInput({
+    event: "unequip_module",
+    module_id: equippedModules[equippedIndex].module_id,
+  });
   console.log("unequipModule");
 };
-const editModulePosition = (equippedModules, equippedIndex, position) => {
+const editModulePosition = (
+  equippedModules,
+  equippedIndex,
+  { offset_angle = undefined, distance = undefined },
+) => {
+  if (offset_angle === undefined && distance === undefined) return;
+  sendInput({
+    event: "edit_module_position",
+    module_id: equippedModules[equippedIndex].module_id,
+    data: { offset_angle, distance },
+  });
   console.log("editModulePosition");
 };
-const editModuleAim = (equippedModules, equippedIndex, aim) => {
+const editModuleAim = (
+  equippedModules,
+  equippedIndex,
+  { aim_angle = undefined },
+) => {
+  if (aim_angle === undefined) return;
+  sendInput({
+    event: "edit_module_aim",
+    module_id: equippedModules[equippedIndex].module_id,
+    data: { aim_angle },
+  });
   console.log("editModuleAim");
 };
 const saveModule = (equippedModules, equippedIndex) => {
+  // sendInput({ event: "save_module", module_id: equippedModules[equippedIndex].module_id });
   console.log("saveModule");
 };
 

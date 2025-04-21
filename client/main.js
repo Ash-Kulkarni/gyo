@@ -1,4 +1,11 @@
-import { sendInput, setupSocket, socket, state, playerId } from "./net.js";
+import {
+  playerInventory,
+  sendInput,
+  setupSocket,
+  socket,
+  state,
+  playerId,
+} from "./net.js";
 import { draw } from "./draw/draw.js";
 import { handleEditorInput } from "./draw/editor.js";
 import { updateDebugOverlay } from "./debug.js";
@@ -10,21 +17,21 @@ import {
   equippedModules,
 } from "./input.js";
 
-const playerInventory = [
-  {
-    id: 1,
-    name: "Laser Cannon",
-    module_id: 20,
-    weapon_id: "lc01",
-    cooldown: 0,
-    max_cooldown: 0.2,
-    offset_angle: 0.2,
-    distance: 20,
-    aim_angle: 0,
-  },
-  { id: 2, name: "Shield Generator" },
-  { id: 3, name: "Engine Module" },
-];
+// const playerInventory = [
+//   // {
+//   //   id: 1,
+//   //   name: "Laser Cannon",
+//   //   module_id: 20,
+//   //   weapon_id: "lc01",
+//   //   cooldown: 0,
+//   //   max_cooldown: 0.2,
+//   //   offset_angle: 0.2,
+//   //   distance: 20,
+//   //   aim_angle: 0,
+//   // },
+//   // { id: 2, name: "Shield Generator" },
+//   // { id: 3, name: "Engine Module" },
+// ];
 
 const handleEventsPlaying = (triggers) => {
   if (triggers.length === 0) return uiState.currentView;
