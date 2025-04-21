@@ -115,56 +115,11 @@ def handle_editor_input(
             mod = next((m for m in player["modules"] if m["module_id"] == module_id), None)
             if mod is None:
                 return
-            current = mod['distance']
-            new = input_data.get("data", {}).get("distance", None)
-            print(f"current: {current}, new: {new}")
-
             mod['distance'] = input_data.get("data", {}).get("distance", mod['distance'])
-
-            # equipped_index = input_data.get("equipped_index")
-            # position = input_data.get("position")
-            # editModulePosition(player["modules"], equipped_index, position)
+            mod['offset_angle'] = input_data.get("data", {}).get("offset_angle", mod['offset_angle'])
         case "edit_module_aim":
             module_id = get_module_id(input_data)
-            # equipped_index = input_data.get("equipped_index")
-            # aim = input_data.get("aim")
-            # editModuleAim(player["modules"], equipped_index, aim)
-
-            # const equipModuleFromInventory = (
-            #   equippedModules,
-            #   inventory,
-            #   inventoryIndex,
-            # ) => {
-            #   console.log("equipModuleFromInventory");
-            #   // const item = inventory[inventoryIndex];
-            #   // if (!item) return;
-            #   // equippedModules.push(item);
-            #   // equippedModules.push({...item})
-            #   sendInput({
-            #     event: "equip_module",
-            #     module_id: inventory[inventoryIndex].module_id,
-            #   });
-            # };
-            # const unequipModule = (equippedModules, inventory, equippedIndex) => {
-            #   sendInput({
-            #     event: "unequip_module",
-            #     module_id: equippedModules[equippedIndex].module_id,
-            #   });
-            #   console.log("unequipModule");
-            # };
-            # const editModulePosition = (equippedModules, equippedIndex, position) => {
-            #   sendInput({
-            #     event: "edit_module_position",
-            #     module_id: equippedModules[equippedIndex].module_id,
-            #     position,
-            #   });
-            #   console.log("editModulePosition");
-            # };
-            # const editModuleAim = (equippedModules, equippedIndex, aim) => {
-            #   sendInput({
-            #     event: "edit_module_aim",
-            #     module_id: equippedModules[equippedIndex].module_id,
-            #     aim,
-            #   });
-            #   console.log("editModuleAim");
-            # };
+            mod = next((m for m in player["modules"] if m["module_id"] == module_id), None)
+            if mod is None:
+                return
+            # mod['offset_angle'] = input_data.get("data", {}).get("offset_angle", mod['offset_angle'])

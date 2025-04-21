@@ -170,6 +170,7 @@ function drawBullets(bullets) {
     ctx.fill();
   }
 }
+
 function drawModsAtPosition(player, x, y, color) {
   const weapons = player.modules;
   const baseAngle = player.a || 0;
