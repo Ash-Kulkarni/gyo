@@ -182,7 +182,6 @@ function drawModsAtPosition(player, x, y, color) {
       mode === EDITOR_MODE.AIM_EDIT);
 
   weapons.forEach((w, i) => {
-    console.log({ w });
     const angleOffset = w.offset_angle ?? 0;
     const dist = w.distance ?? 20;
 
@@ -210,6 +209,7 @@ function drawModsAtPosition(player, x, y, color) {
     ctx.fillStyle = isSelected ? selectedColor : color;
     ctx.shadowBlur = isSelected ? 8 : 4;
     ctx.shadowColor = color;
+    ctx.globalAlpha = (maxCooldown - cooldown) / maxCooldown;
     ctx.fill();
     ctx.restore();
 
