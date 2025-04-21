@@ -75,6 +75,10 @@ export function handleEditorInput(input, player, inventory) {
   const equippedModules = player.modules;
   // console.log(equippedModules);
   // console.log(inventory);
+  const selectedModule = player.modules[editorState.equippedIndex];
+  const selectedModuleDistance = selectedModule.distance;
+  const selectedModuleOffsetAngle = selectedModule.offset_angle;
+  const selectedModuleAimAngle = selectedModule.aim_angle;
 
   switch (editorState.mode) {
     case EDITOR_MODE.INVENTORY:
@@ -118,9 +122,6 @@ export function handleEditorInput(input, player, inventory) {
       break;
 
     case EDITOR_MODE.POSITION_EDIT:
-      const selectedModule = player.modules[editorState.equippedIndex];
-      const selectedModuleDistance = selectedModule.distance;
-      const selectedModuleOffsetAngle = selectedModule.offset_angle;
       if (input[EDITOR_KEYMAP.DPAD_UP_KEY]) {
         editModulePosition(equippedModules, editorState.equippedIndex, {
           distance: selectedModuleDistance + 1,
@@ -145,21 +146,19 @@ export function handleEditorInput(input, player, inventory) {
       break;
 
     case EDITOR_MODE.AIM_EDIT:
-      if (input[EDITOR_KEYMAP.DPAD_UP_KEY]) {
-        editModuleAim(equippedModules, editorState.equippedIndex, "up");
-      } else if (input[EDITOR_KEYMAP.DPAD_DOWN_KEY]) {
-        editModuleAim(equippedModules, editorState.equippedIndex, "down");
-      } else if (input[EDITOR_KEYMAP.DPAD_LEFT_KEY]) {
-        editModuleAim(equippedModules, editorState.equippedIndex, "left");
+      if (input[EDITOR_KEYMAP.DPAD_LEFT_KEY]) {
+        editModuleAim(equippedModules, editorState.equippedIndex, {
+          aim_angle: selectedModuleAimAngle - 0.1,
+        });
       } else if (input[EDITOR_KEYMAP.DPAD_RIGHT_KEY]) {
-        editModuleAim(equippedModules, editorState.equippedIndex, "right");
+        editModuleAim(equippedModules, editorState.equippedIndex, {
+          aim_angle: selectedModuleAimAngle + 0.1,
+        });
       } else if (input[EDITOR_KEYMAP.B_KEY]) {
-        editorState.mode = EDITOR_MODE.EQUIPPED;
+        editorState.mode = EDITOR_MODE.POSITION_EDIT;
       } else if (input[EDITOR_KEYMAP.A_KEY]) {
-        saveModule(equippedModules, editorState.equippedIndex);
         editorState.mode = EDITOR_MODE.EQUIPPED;
       }
-      // A to save and return to equipped_selection
       break;
   }
 }

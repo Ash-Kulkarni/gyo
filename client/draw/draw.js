@@ -13,6 +13,25 @@ const ctx = canvas.getContext("2d");
 import { playerId } from "./../net.js";
 import { SHAPES } from "./../shared/shapes.js";
 
+/** spawn position + mount angle */
+function baySpawn(x, y, baseAngle, bay) {
+  const mountAngle = baseAngle + (bay.offset_angle || 0);
+  const r = bay.distance || 20;
+  return {
+    x: x + Math.cos(mountAngle) * r,
+    y: y + Math.sin(mountAngle) * r,
+    mountAngle,
+  };
+}
+/** absolute firing angle */
+function bayAim(baseAngle, bay) {
+  return baseAngle + (bay.aim_angle || 0);
+}
+// turn radians → degrees string
+function deg(rad) {
+  return ((rad * 180) / Math.PI).toFixed(0) + "°";
+}
+
 export function drawTriangle(x, y, angle, color) {
   ctx.save();
   ctx.translate(x, y);
@@ -111,7 +130,7 @@ export function draw(view, state, input, inventory) {
     const { x, y, a } = players[pid];
     const color = pid === playerId ? "cyan" : "magenta";
     drawTriangle(x, y, a || 0, color);
-    drawModsAtPosition(players[pid], x, y, color);
+    drawModsAtPosition(players[pid]);
     if (pid === playerId) {
       drawThrust(x, y, a || 0, input?.move);
     }
@@ -171,89 +190,70 @@ function drawBullets(bullets) {
   }
 }
 
-function drawModsAtPosition(player, x, y, color) {
-  const weapons = player.modules;
-  const baseAngle = player.a || 0;
+function drawModsAtPosition(player) {
+  const { x, y, a: baseAngle, modules } = player;
   const { mode, equippedIndex } = editorState;
+  const inEditor = uiState.currentView === VIEW.EDITOR;
+  const selecting =
+    inEditor &&
+    [
+      EDITOR_MODE.EQUIPPED,
+      EDITOR_MODE.POSITION_EDIT,
+      EDITOR_MODE.AIM_EDIT,
+    ].includes(mode);
 
-  const inModuleSelect =
-    uiState.currentView === VIEW.EDITOR &&
-    (mode === EDITOR_MODE.EQUIPPED ||
-      mode === EDITOR_MODE.POSITION_EDIT ||
-      mode === EDITOR_MODE.AIM_EDIT);
-
-  weapons.forEach((w, i) => {
-    const angleOffset = w.offset_angle ?? 0;
-    const dist = w.distance ?? 20;
-
-    const cooldown = w.cooldown;
-    const maxCooldown = w.max_cooldown;
-
-    const aimAngle = w.aim_angle ?? 0;
-
-    const angle = baseAngle + angleOffset;
-    const bx = x + Math.cos(angle) * dist;
-    const by = y + Math.sin(angle) * dist;
+  modules.forEach((m, i) => {
+    const { x: bx, y: by, mountAngle } = baySpawn(x, y, baseAngle, m);
+    const aimAngle = bayAim(baseAngle, m);
+    const isSelected = i === equippedIndex && selecting;
 
     ctx.save();
     ctx.translate(bx, by);
-    ctx.rotate(baseAngle + Math.PI / 2);
+    ctx.rotate(aimAngle + Math.PI / 2);
+
+    ctx.globalAlpha = 1 - (m.cooldown || 0) / (m.max_cooldown || 1);
+    ctx.fillStyle = isSelected
+      ? "rgba(255, 255, 255, 0.6)"
+      : "rgba(200, 200, 200, 0.4)";
+    ctx.shadowBlur = isSelected ? 12 : 4;
+    ctx.shadowColor = "#000";
+
     ctx.beginPath();
     ctx.moveTo(0, -3);
     ctx.lineTo(4, 3);
     ctx.lineTo(-4, 3);
     ctx.closePath();
-
-    const selectedColor = "rgba(255, 255, 255, 0.5)";
-
-    const isSelected = i === equippedIndex && inModuleSelect;
-    ctx.fillStyle = isSelected ? selectedColor : color;
-    ctx.shadowBlur = isSelected ? 8 : 4;
-    ctx.shadowColor = color;
-    ctx.globalAlpha = (maxCooldown - cooldown) / maxCooldown;
     ctx.fill();
     ctx.restore();
 
-    if (isSelected) {
-      // draw a halo circle around it
+    if (!isSelected) return;
+
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,255,255,0.25)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(bx, by, 8, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    if (mode === EDITOR_MODE.POSITION_EDIT) {
       ctx.save();
-      ctx.strokeStyle = "rgba(255,255,255,0.25)";
-      ctx.lineWidth = 2;
+      ctx.fillStyle = "#ddd";
+      ctx.font = "12px monospace";
+      ctx.fillText(`r:${m.distance || 0}`, bx + 8, by - 4);
+      ctx.fillText(`θ:${deg(m.offset_angle || 0)}`, bx + 8, by + 12);
+      ctx.restore();
+    }
+
+    if (mode === EDITOR_MODE.AIM_EDIT) {
+      ctx.save();
+      ctx.strokeStyle = "#ddd";
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.arc(bx, by, dist * 0.2 + 6, 0, Math.PI * 2);
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + Math.cos(aimAngle) * 20, by + Math.sin(aimAngle) * 20);
       ctx.stroke();
       ctx.restore();
-
-      // POSITION_EDIT: show distance & offset_angle
-      if (mode === EDITOR_MODE.POSITION_EDIT) {
-        ctx.save();
-        ctx.fillStyle = "#ddd";
-        ctx.font = "12px monospace";
-        ctx.fillText(`r:${dist}`, bx + 10, by - 5);
-        ctx.fillText(
-          `θ:${((angleOffset * 180) / Math.PI).toFixed(0)}°`,
-          bx + 10,
-          by + 12,
-        );
-        ctx.restore();
-      }
-
-      // AIM_EDIT: draw a small dashed line along bay.aim_angle
-      if (mode === EDITOR_MODE.AIM_EDIT) {
-        const lineAngle = aimAngle + baseAngle;
-        ctx.save();
-        ctx.strokeStyle = "#ddd";
-        ctx.setLineDash([4, 4]);
-        ctx.beginPath();
-        ctx.moveTo(bx, by);
-        ctx.lineTo(
-          bx + Math.cos(lineAngle) * 20,
-          by + Math.sin(lineAngle) * 20,
-        );
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.restore();
-      }
     }
   });
 }

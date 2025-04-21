@@ -11,7 +11,7 @@ def default_weapons():
             "max_cooldown": 0.2,
             "offset_angle": 0.2,
             "distance": 20,
-            "aim_angle": 0
+            "aim_angle": -7
         },
         {
             "module_id": 11,
@@ -21,7 +21,7 @@ def default_weapons():
             "max_cooldown": 0.2,
             "offset_angle": -0.2,
             "distance": 20,
-            "aim_angle": 0
+            "aim_angle": 0.2
         },
 
         {
@@ -32,7 +32,7 @@ def default_weapons():
             "max_cooldown": 0.2,
             "offset_angle": 1,
             "distance": 50,
-            "aim_angle": 0
+            "aim_angle": -6
         },
         {
             "module_id": 13,
@@ -41,8 +41,8 @@ def default_weapons():
             "cooldown": 0,
             "max_cooldown": 0.2,
             "offset_angle": -1,
-            "distance": 50,
-            "aim_angle": 0
+            "distance": 30,
+            "aim_angle": -2.1
         },
 
         {
@@ -52,8 +52,8 @@ def default_weapons():
             "cooldown": 0,
             "max_cooldown": 0.3,
             "offset_angle": 1.5,
-            "distance": 30,
-            "aim_angle": 0
+            "distance": 40,
+            "aim_angle": 1
         },
         {
             "module_id": 15,
@@ -62,8 +62,8 @@ def default_weapons():
             "cooldown": 0,
             "max_cooldown": 0.3,
             "offset_angle": -1.5,
-            "distance": 30,
-            "aim_angle": 0
+            "distance": 35,
+            "aim_angle": 2
         },
     ]
 
