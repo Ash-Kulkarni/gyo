@@ -26,7 +26,7 @@ def spawn_enemy(x, y, type=EnemyType.CHASER.value):
     }
 
 
-def maybe_spawn_enemies(s: AppState):
+def maybe_spawn_enemies(s: AppState, dt: float):
     if len(s.enemies) < 10:
         x = random.randint(-2000, 2000)
         y = random.randint(-2000, 2000)

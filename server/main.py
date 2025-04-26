@@ -8,7 +8,6 @@ import os
 from .player import default_player, mock_inventory
 from .client_input import handle_client_input
 from .systems import (
-    read_state,
     tick_bullets_velocity,
     update_enemy_behavior,
     respawn_dead_players,
@@ -66,7 +65,7 @@ async def ws_endpoint(ws: WebSocket):
             if not input_data:
                 continue
             await handle_client_input(
-                players, bullets, input_data, pid, inventory=mock_inventory.get(pid)
+                app.state, input_data, pid, inventory=mock_inventory.get(pid)
             )
 
             if is_testing():
@@ -77,22 +76,33 @@ async def ws_endpoint(ws: WebSocket):
         del players[pid]
 
 
+all_systems = [
+    tick_player_weapon_cooldowns,
+    update_enemy_behavior,
+    maybe_spawn_enemies,
+    handle_enemy_player_collisions,
+    respawn_dead_players,
+    tick_bullets_velocity,
+    check_bullet_collisions,
+    remove_out_of_bounds_bullets,
+    tick_modules,
+]
+
+
+def run_systems(s: AppState, dt: float):
+    for func in all_systems:
+        func(s, dt)
+
+
 async def broadcast_loop(s: AppState):
-    FRAME_RATE = 60
-    TICK_RATE = 1 / FRAME_RATE
+    last_time = asyncio.get_event_loop().time()
     while True:
-        tick_player_weapon_cooldowns(s, TICK_RATE)
-        update_enemy_behavior(s)
-        maybe_spawn_enemies(s)
-        handle_enemy_player_collisions(s)
-        respawn_dead_players(s)
-        await broadcast_state(s, read_state(s))
-        await asyncio.sleep(TICK_RATE)
-        tick_bullets_velocity(s)
-        [next_bullets, _dead_enemies] = check_bullet_collisions(s)
-        s.bullets[:] = next_bullets
-        remove_out_of_bounds_bullets(s)
-        tick_modules(s, TICK_RATE)
+        current_time = asyncio.get_event_loop().time()
+        dt = (current_time - last_time) * 30
+        last_time = current_time
+        run_systems(s, dt)
+        await broadcast_state(s, dt)
+        await asyncio.sleep(0)
 
 
 @app.on_event("startup")
@@ -102,4 +112,8 @@ async def startup_event():
     app.state.bullets = []
     app.state.enemies = []
     app.state.scoreboard = {}
+    app.state.world_size = {
+        "width": 4000,
+        "height": 4000,
+    }
     asyncio.create_task(broadcast_loop(app.state))

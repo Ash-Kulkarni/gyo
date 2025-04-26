@@ -6,17 +6,17 @@ import random
 def new_module(name, max_cooldown, weapon_id=None):
     angle = random.uniform(-3.5, 3.5)
     m = {
-        'module_id': str(uuid4()),
-        'name': name,
-        'cooldown': 0,
-        'max_cooldown': max_cooldown,
-        'offset_angle': angle,
-        'distance': random.randint(20, 50),
-        'aim_angle': angle,
-        'colour': random.choice(["red", "green", "yellow"]),
+        "module_id": str(uuid4()),
+        "name": name,
+        "cooldown": 0,
+        "max_cooldown": max_cooldown,
+        "offset_angle": angle,
+        "distance": random.randint(20, 50),
+        "aim_angle": angle,
+        "colour": random.choice(["red", "green", "yellow"]),
     }
     if weapon_id:
-        m['weapon_id'] = weapon_id
+        m["weapon_id"] = weapon_id
     return m
 
 
@@ -53,9 +53,9 @@ def default_player(ws: WebSocket):
         "vy": 0,
         "a": 0,
         "speed": 5,
-        'hp': 10,
-        'colour': random.choice(["red", "green", "yellow"]),
-        "modules": default_modules()
+        "hp": 10,
+        "colour": random.choice(["red", "green", "yellow"]),
+        "modules": default_modules(),
     }
 
 
@@ -77,10 +77,11 @@ class MockInventory:
         self.inventory = inventory
 
     def default_inventory(self):
-        return [new_module('sring', 1, 'spread'),
-                new_module('sraing', 0.5, 'rapid'),
-                 *default_modules()
-                ]
+        return [
+            new_module("sring", 1, "spread"),
+            new_module("sraing", 0.5, "rapid"),
+            *default_modules(),
+        ]
 
 
 mock_inventory = MockInventory()

@@ -7,5 +7,6 @@ AppState = NamedTuple(
         ("bullets", List[Dict[str, Any]]),
         ("enemies", List[Dict[str, Any]]),
         ("scoreboard", Dict[str, Dict[str, int]]),
+        ("world_size", Dict[str, int]),
     ],
 )

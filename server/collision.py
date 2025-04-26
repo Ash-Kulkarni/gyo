@@ -8,7 +8,7 @@ def dist_sq(x1, y1, x2, y2):
     return (x1 - x2) ** 2 + (y1 - y2) ** 2
 
 
-def check_bullet_collisions(s: AppState):
+def check_bullet_collisions(s: AppState, dt: float):
     dead_enemies = []
     live_bullets = []
 
@@ -46,10 +46,12 @@ def check_bullet_collisions(s: AppState):
 
     s.enemies[:] = [e for e in s.enemies if e["hp"] > 0]
     # dead_enemies = [e for e in enemies if e["hp"] <= 0]
-    return live_bullets, dead_enemies
+
+    s.bullets[:] = live_bullets
+    # return live_bullets, dead_enemies
 
 
-def handle_enemy_player_collisions(s: AppState):
+def handle_enemy_player_collisions(s: AppState, dt: float):
     for pid, player in s.players.items():
         px, py = player["x"], player["y"]
         for enemy in s.enemies:
