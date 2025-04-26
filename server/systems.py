@@ -90,3 +90,15 @@ def tick_bullets_velocity(s: AppState, dt: float):
     for b in s.bullets:
         b["x"] += b["vx"] * dt
         b["y"] += b["vy"] * dt
+
+
+def tick_player_velocity(s: AppState, dt: float):
+    for p in s.players.values():
+        p["x"] += p["vx"] * dt
+        p["y"] += p["vy"] * dt
+
+
+def tick_enemy_velocity(s: AppState, dt: float):
+    for e in s.enemies:
+        e["x"] += e["vx"] * dt
+        e["y"] += e["vy"] * dt

@@ -51,16 +51,20 @@ export const parseGamePadPlaying = (gp, modules) => {
     move:
       moveMag > 0.2
         ? {
-            x: lx * 2,
-            y: ly * 2,
-          }
-        : false,
+          x: lx * 2,
+          y: ly * 2,
+        }
+        : {
+          x: 0,
+          y: 0
+
+        },
     aim:
       aimMag > 0.3
         ? {
-            x: rx,
-            y: ry,
-          }
+          x: rx,
+          y: ry,
+        }
         : false,
     fire: gp.buttons[RIGHT_TRIGGER_KEY]?.pressed ?? false,
     activate_modules: activeModuleIds.length > 0 ? activeModuleIds : false,

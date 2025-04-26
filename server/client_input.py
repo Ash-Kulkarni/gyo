@@ -23,7 +23,7 @@ def spawn_point(
     return x + math.cos(angle) * distance, y + math.sin(angle) * distance
 
 
-def handle_fire_all(player, bullets, pid):
+def handle_fire_all(player, s, pid):
     x, y = player["x"], player["y"]
     ship_angle = player["a"]
     move_speed = player.get("speed", 0)
@@ -34,70 +34,79 @@ def handle_fire_all(player, bullets, pid):
             continue
         w["cooldown"] = w["max_cooldown"]
 
-        weapon_id = w["weapon_id"]
-        offset = w.get("offset_angle", 0)
-        aim = w.get("aim_angle", 0)
-        dist = w.get("distance", 20)
+        spawn_projectiles(s, w, move_speed, pid, ship_angle, x, y)
 
-        mount_angle = compute_total_angle(ship_angle, offset, 0)
-        bx, by = spawn_point(x, y, mount_angle, dist)
 
-        def add_projectile(vx, vy):
-            bullets.append(
-                {
-                    "x": bx,
-                    "y": by,
-                    "vx": vx,
-                    "vy": vy,
-                    "from": pid,
-                    "radius": 2,
-                }
-            )
+def spawn_projectiles(s, w, player_velocity, pid, ship_angle, x, y):
+    weapon_id = w["weapon_id"]
+    offset = w.get("offset_angle", 0)
+    aim = w.get("aim_angle", 0)
+    dist = w.get("distance", 20)
 
-        if weapon_id == "rapid":
-            # speed = 12
-            fire_angle = compute_total_angle(ship_angle, 0, aim)
-            vx, vy = compute_velocity(fire_angle, 12, move_speed)
+    mount_angle = compute_total_angle(ship_angle, offset, 0)
+    bx, by = spawn_point(x, y, mount_angle, dist)
+
+    def add_projectile(vx, vy):
+        s.bullets.append(
+            {
+                "x": bx,
+                "y": by,
+                "vx": vx,
+                "vy": vy,
+                "from": pid,
+                "radius": 2,
+            }
+        )
+
+    if weapon_id == "rapid":
+        # speed = 12
+        fire_angle = compute_total_angle(ship_angle, 0, aim)
+        vx, vy = compute_velocity(fire_angle, 12, player_velocity)
+        add_projectile(vx, vy)
+
+    elif weapon_id == "spread":
+        # speed = 8
+        for spread in (-0.2, 0, 0.2):
+            fire_angle = compute_total_angle(ship_angle, spread, aim)
+            vx, vy = compute_velocity(fire_angle, 8, player_velocity)
             add_projectile(vx, vy)
 
-        elif weapon_id == "spread":
-            # speed = 8
-            for spread in (-0.2, 0, 0.2):
-                fire_angle = compute_total_angle(ship_angle, spread, aim)
-                vx, vy = compute_velocity(fire_angle, 8, move_speed)
-                add_projectile(vx, vy)
+
+def clamp_players_to_world_bounds(s: AppState, dt: float):
+    """Clamp players to world bounds."""
+    for pid, p in s.players.items():
+        clamped_x, clamped_y = clamp_to_world_bounds(
+            s.world_size, p["x"], p["y"])
+        p["x"] = clamped_x
+        p["y"] = clamped_y
 
 
-async def handle_client_input(s: AppState, input_data, pid, inventory):
+async def handle_client_input(s: AppState, dt: float, input_data, pid, inventory):
     p = s.players[pid]
 
-    move_x = input_data.get("move", {}).get("x", 0)
-    move_y = input_data.get("move", {}).get("y", 0)
-    move_angle = math.atan2(move_y, move_x)
+    move_x, move_y = None, None
+    if input_data.get("move", False):
+        move_x = input_data["move"]["x"]
+        move_y = input_data["move"]["y"]
+        move_angle = math.atan2(move_y, move_x)
 
-    move_speed = p.get("speed", 0)
-    p["x"] += move_x * move_speed
-    p["y"] += move_y * move_speed
+        move_speed = p.get("speed", 0)
+        p["vx"] = move_x * move_speed
+        p["vy"] = move_y * move_speed
+
+    if input_data.get("aim", False):
+        aim = input_data["aim"]
+        angle = math.atan2(aim["y"], aim["x"])
+        p["a"] = angle
+    elif move_x or move_y:
+        p["a"] = move_angle
 
     if input_data.get("activate_modules", False):
         if module_ids := input_data["activate_modules"]:
             await activate_modules(p, module_ids)
 
-    if input_data.get("aim", False):
-        # print(input_data)
-        aim_x = input_data.get("aim", {}).get("x", 0)
-        aim_y = input_data.get("aim", {}).get("y", 0)
-        angle = math.atan2(aim_y, aim_x)
-        p["a"] = angle
-    elif move_x or move_y:
-        p["a"] = move_angle
-
-    clamped_x, clamped_y = clamp_to_world_bounds(s.world_size, p["x"], p["y"])
-    p["x"] = clamped_x
-    p["y"] = clamped_y
     if input_data.get("fire"):
-        handle_fire_all(p, s.bullets, pid)
-    # print(input_data)
+        handle_fire_all(p, s, pid)
     handle_editor_input(input_data, pid, p, inventory)
 
 
@@ -145,7 +154,8 @@ def handle_editor_input(input_data, pid, player, inventory):
         case "edit_module_position":
             module_id = get_module_id(input_data)
             mod = next(
-                (m for m in player["modules"] if m["module_id"] == module_id), None
+                (m for m in player["modules"]
+                 if m["module_id"] == module_id), None
             )
             if mod is None:
                 return
@@ -158,7 +168,8 @@ def handle_editor_input(input_data, pid, player, inventory):
         case "edit_module_aim":
             module_id = get_module_id(input_data)
             mod = next(
-                (m for m in player["modules"] if m["module_id"] == module_id), None
+                (m for m in player["modules"]
+                 if m["module_id"] == module_id), None
             )
             if mod is None:
                 return

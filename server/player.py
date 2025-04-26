@@ -9,7 +9,7 @@ def new_module(name, max_cooldown, weapon_id=None):
         "module_id": str(uuid4()),
         "name": name,
         "cooldown": 0,
-        "max_cooldown": max_cooldown,
+        "max_cooldown": max_cooldown * 100,
         "offset_angle": angle,
         "distance": random.randint(20, 50),
         "aim_angle": angle,
@@ -47,12 +47,13 @@ def default_modules():
 def default_player(ws: WebSocket):
     return {
         "ws": ws,
+        "last_input_time": None,
         "x": 0,
         "y": 0,
         "vx": 0,
         "vy": 0,
         "a": 0,
-        "speed": 5,
+        "speed": 10,
         "hp": 10,
         "colour": random.choice(["red", "green", "yellow"]),
         "modules": default_modules(),
