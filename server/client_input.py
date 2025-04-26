@@ -107,6 +107,7 @@ async def handle_client_input(s: AppState, dt: float, input_data, pid, inventory
 
     if input_data.get("fire"):
         handle_fire_all(p, s, pid)
+
     handle_editor_input(input_data, pid, p, inventory)
 
 

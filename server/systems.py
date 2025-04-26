@@ -93,9 +93,15 @@ def tick_bullets_velocity(s: AppState, dt: float):
 
 
 def tick_player_velocity(s: AppState, dt: float):
+    w = s.world_size.get("width", None)
+    h = s.world_size.get("height", None)
+    if w is None or h is None:
+        raise ValueError("World size not defined")
     for p in s.players.values():
         p["x"] += p["vx"] * dt
         p["y"] += p["vy"] * dt
+        p["x"] = max(-w / 2, min(p["x"], w / 2))
+        p["y"] = max(-h / 2, min(p["y"], h / 2))
 
 
 def tick_enemy_velocity(s: AppState, dt: float):

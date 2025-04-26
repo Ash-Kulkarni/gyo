@@ -6,7 +6,6 @@ import asyncio
 import os
 
 from .player import default_player, mock_inventory
-from .client_input import handle_client_input, clamp_players_to_world_bounds
 from .systems import (
     tick_bullets_velocity,
     tick_player_velocity,
@@ -21,6 +20,7 @@ from .enemies import maybe_spawn_enemies
 from .collision import check_bullet_collisions, handle_enemy_player_collisions
 from .modules import tick_modules
 from .types import AppState
+from .client_input import handle_client_input
 
 
 def is_testing():
@@ -67,13 +67,15 @@ async def ws_endpoint(ws: WebSocket):
             if not input_data:
                 continue
             current_time = asyncio.get_event_loop().time()
-            last_input_time = players[pid].get("last_input_time") or current_time
+            last_input_time = players[pid].get(
+                "last_input_time") or current_time
             print("current_time", current_time)
             print("last_input_time", last_input_time)
             dt = current_time - last_input_time
             players[pid]["last_input_time"] = current_time
             await handle_client_input(
-                app.state, dt, input_data, pid, inventory=mock_inventory.get(pid)
+                app.state, dt, input_data, pid, inventory=mock_inventory.get(
+                    pid)
             )
 
             if is_testing():
@@ -92,7 +94,6 @@ all_systems = [
     respawn_dead_players,
     tick_bullets_velocity,
     tick_player_velocity,
-    clamp_players_to_world_bounds,
     tick_enemy_velocity,
     check_bullet_collisions,
     remove_out_of_bounds_bullets,
