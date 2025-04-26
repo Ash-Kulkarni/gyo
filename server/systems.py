@@ -1,15 +1,16 @@
 import math
 import random
 import json
+from .types import AppState
 
 
-def update_enemy_behavior(enemies, players):
-    for enemy in enemies:
+def update_enemy_behavior(s: AppState):
+    for enemy in s.enemies:
         if enemy["type"] == "chaser":
             # find closest player
             closest = None
             closest_dist = float("inf")
-            for p in players.values():
+            for p in s.players.values():
                 dx = p["x"] - enemy["x"]
                 dy = p["y"] - enemy["y"]
                 d2 = dx * dx + dy * dy
@@ -29,57 +30,62 @@ def update_enemy_behavior(enemies, players):
                     enemy["y"] += ny * speed
 
 
-def respawn_dead_players(players):
-
-    for pid, player in players.items():
+def respawn_dead_players(s: AppState):
+    for pid, player in s.players.items():
         if player["hp"] <= 0:
             print(f"💀 Respawning player {pid}")
-            player["x"], player["y"] = random.randint(
-                -2000, 2000), random.randint(-2000, 2000)
+            player["x"], player["y"] = (
+                random.randint(-2000, 2000),
+                random.randint(-2000, 2000),
+            )
             player["hp"] = 10
 
 
-async def broadcast_state(players, state):
-
-    for p in players.values():
+async def broadcast_state(s: AppState, state):
+    for p in s.players.values():
         try:
             await p["ws"].send_text(json.dumps(state))
         except:
             continue
 
 
-def read_state(players, bullets, enemies):
-
+def read_state(s: AppState):
     return {
         "players": {
             pid: {
                 "x": p["x"],
                 "y": p["y"],
                 "a": p["a"],
-                'hp': p['hp'],
-                'colour': p['colour'],
-                'modules': p['modules']
-            } for pid, p in players.items()
+                "hp": p["hp"],
+                "colour": p["colour"],
+                "modules": p["modules"],
+            }
+            for pid, p in s.players.items()
         },
-        'bullets': bullets,
-        'enemies': enemies,
-        'scoreboard': {pid: {"kills": p["kills"]} for pid, p in players.items() if p.get("kills") is not None},
+        "bullets": s.bullets,
+        "enemies": s.enemies,
+        "scoreboard": {
+            pid: {"kills": p["kills"]}
+            for pid, p in s.players.items()
+            if p.get("kills") is not None
+        },
     }
 
 
-def remove_out_of_bounds_bullets(bullets):
-    bullets[:] = [b for b in bullets if -2000 <
-                  b['x'] < 2000 and -2000 < b['y'] < 2000]
+def remove_out_of_bounds_bullets(s: AppState):
+    s.bullets[:] = [
+        b for b in s.bullets if -2000 < b["x"] < 2000 and -2000 < b["y"] < 2000
+    ]
 
 
-def tick_player_weapon_cooldowns(players, TICK_RATE):
-    for p in players.values():
-        weapons = [m for m in p['modules'] if m.get("weapon_id")]
+def tick_player_weapon_cooldowns(s: AppState, TICK_RATE):
+    for p in s.players.values():
+        weapons = [m for m in p["modules"] if m.get("weapon_id")]
         for weapon in weapons:
             weapon["cooldown"] = max(0, weapon["cooldown"] - TICK_RATE)
 
 
-def tick_bullets_velocity(bullets):
-    for b in bullets:
+def tick_bullets_velocity(s: AppState):
+    for b in s.bullets:
         b["x"] += b["vx"]
         b["y"] += b["vy"]

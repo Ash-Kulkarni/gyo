@@ -1,29 +1,26 @@
 from .shared.shapes import SHAPES
+from .types import AppState
 
 import math
 
 
 def dist_sq(x1, y1, x2, y2):
-    return (x1 - x2)**2 + (y1 - y2)**2
+    return (x1 - x2) ** 2 + (y1 - y2) ** 2
 
 
-def check_bullet_collisions(bullets, enemies, scoreboard):
+def check_bullet_collisions(s: AppState):
     dead_enemies = []
     live_bullets = []
 
-    for bullet in bullets:
+    for bullet in s.bullets:
         hit = False
-        circle = {
-            "x": bullet["x"],
-            "y": bullet["y"],
-            "r": bullet.get("radius")
-        }
-        for enemy in enemies:
+        circle = {"x": bullet["x"], "y": bullet["y"], "r": bullet.get("radius")}
+        for enemy in s.enemies:
             ex, ey = enemy["x"], enemy["y"]
 
             dx = circle["x"] - ex
             dy = circle["y"] - ey
-            if dx * dx + dy * dy > (circle["r"]+10 ** 2):
+            if dx * dx + dy * dy > (circle["r"] + 10**2):
                 continue
 
             shape_id = enemy.get("shape_id")
@@ -39,7 +36,7 @@ def check_bullet_collisions(bullets, enemies, scoreboard):
                 enemy["hp"] -= 1
                 hit = True
                 if enemy["hp"] <= 0:
-                    scoreboard[bullet["from"]]["kills"] += 1
+                    s.scoreboard[bullet["from"]]["kills"] += 1
                     dead_enemies.append(enemy)
                     # print(f"Enemy {enemy} killed by bullet {bullet}")
                 break
@@ -47,19 +44,19 @@ def check_bullet_collisions(bullets, enemies, scoreboard):
         if not hit:
             live_bullets.append(bullet)
 
-    enemies[:] = [e for e in enemies if e["hp"] > 0]
+    s.enemies[:] = [e for e in s.enemies if e["hp"] > 0]
     # dead_enemies = [e for e in enemies if e["hp"] <= 0]
     return live_bullets, dead_enemies
 
 
-def handle_enemy_player_collisions(players, enemies):
-    for pid, player in players.items():
+def handle_enemy_player_collisions(s: AppState):
+    for pid, player in s.players.items():
         px, py = player["x"], player["y"]
-        for enemy in enemies:
+        for enemy in s.enemies:
             dx = enemy["x"] - px
             dy = enemy["y"] - py
             dist_sq = dx * dx + dy * dy
-            if dist_sq < (20 ** 2):  # collision range
+            if dist_sq < (20**2):  # collision range
                 player["hp"] -= 1  # basic contact damage
 
 
@@ -70,11 +67,14 @@ def rotate_point(px, py, angle):
 
 
 def translate_and_rotate_polygon(vertices, x, y, angle):
-    return [(x + dx, y + dy) for (dx, dy) in [rotate_point(px, py, angle) for (px, py) in vertices]]
+    return [
+        (x + dx, y + dy)
+        for (dx, dy) in [rotate_point(px, py, angle) for (px, py) in vertices]
+    ]
 
 
 def dot(v1, v2):
-    return v1[0]*v2[0] + v1[1]*v2[1]
+    return v1[0] * v2[0] + v1[1] * v2[1]
 
 
 def project_polygon(axis, vertices):
@@ -106,21 +106,22 @@ def sat_circle_vs_polygon(circle, polygon_vertices, px, py, angle):
         axis = normalize(-edge[1], edge[0])
 
         poly_proj = project_polygon(axis, world_poly)
-        circle_proj = project_circle(
-            axis, circle["x"], circle["y"], circle["r"])
+        circle_proj = project_circle(axis, circle["x"], circle["y"], circle["r"])
 
         if not polygons_overlap(poly_proj, circle_proj):
             return False
 
-    closest_point = min(world_poly, key=lambda v: (
-        v[0] - circle["x"])**2 + (v[1] - circle["y"])**2)
+    closest_point = min(
+        world_poly, key=lambda v: (v[0] - circle["x"]) ** 2 + (v[1] - circle["y"]) ** 2
+    )
     axis_to_circle = normalize(
-        closest_point[0] - circle["x"], closest_point[1] - circle["y"])
+        closest_point[0] - circle["x"], closest_point[1] - circle["y"]
+    )
     poly_proj = project_polygon(axis_to_circle, world_poly)
-    circle_proj = project_circle(
-        axis_to_circle, circle["x"], circle["y"], circle["r"])
+    circle_proj = project_circle(axis_to_circle, circle["x"], circle["y"], circle["r"])
 
     return polygons_overlap(poly_proj, circle_proj)
+
 
 # # Example usage
 # circle = {"x": 5, "y": 5, "r": 3}
