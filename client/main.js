@@ -17,6 +17,39 @@ import {
   equippedModules,
 } from "./input.js";
 
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let bgBuffer, bgSource, bgGain;
+
+async function loadBackgroundLoop() {
+  // fetch and decode the loop
+  const resp = await fetch('base_loop_1.wav');
+  const arrayBuf = await resp.arrayBuffer();
+  bgBuffer = await audioCtx.decodeAudioData(arrayBuf);
+}
+
+function playBackgroundLoop() {
+  // create a fresh source each time
+  bgSource = audioCtx.createBufferSource();
+  bgGain = audioCtx.createGain();
+  bgSource.buffer = bgBuffer;
+  bgSource.loop = true;
+
+  // ducking helpers (optional)
+  bgGain.gain.value = 0.8;
+  bgSource.connect(bgGain).connect(audioCtx.destination);
+  bgSource.start();
+}
+
+// resume on first user gesture (browser autoplay policy)
+document.addEventListener('click', () => {
+  audioCtx.resume().then(() => {
+    if (bgBuffer && !bgSource) playBackgroundLoop();
+  });
+}, { once: true });
+
+// load the loop immediately
+loadBackgroundLoop();
 // const playerInventory = [
 //   // {
 //   //   id: 1,
