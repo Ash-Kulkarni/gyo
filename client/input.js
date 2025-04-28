@@ -1,3 +1,4 @@
+
 const A_KEY = 0;
 const B_KEY = 1;
 const X_KEY = 2;
@@ -16,67 +17,79 @@ const DPAD_LEFT_KEY = 14;
 const DPAD_RIGHT_KEY = 15;
 // const HOME_KEY = 16;
 
-export const equippedModules = [
-  {
-    module_id: 1,
-    type: "boost",
-    keymap: A_KEY,
-  },
-  {
-    module_id: 2,
-    type: "boost",
-    keymap: B_KEY,
-  },
-  {
-    module_id: 3,
-    type: "shield",
-    keymap: X_KEY,
-  },
-];
 
+/**
+* @returns {Gamepad | null} 
+**/
 export const pollGamepad = () => navigator.getGamepads()[0] || null;
 
-export const parseGamePadPlaying = (gp, modules) => {
-  if (!gp) return [false, false];
 
-  const [lx, ly] = gp.axes;
+/**
+* @typedef startSelectEventTriggers
+* @type {Object}
+* @property {boolean} open_menu
+* @property {boolean} open_ship_editor
+**/
+
+/** 
+* @param {Gamepad} gp
+* @returns {startSelectEventTriggers}
+**/
+const getStartSelectEventTriggers = (gp) =>
+({
+  open_menu: gp.buttons[START_KEY]?.pressed,
+  open_ship_editor: gp.buttons[SELECT_KEY]?.pressed,
+})
+
+const getPlayerFiring = (gp) => ({
+  fire: gp.buttons[RIGHT_TRIGGER_KEY]?.pressed ?? false
+})
+
+const getPlayerAim = (gp) => {
   const [rx, ry] = gp.axes.slice(2, 4);
-  const moveMag = Math.hypot(lx, ly);
   const aimMag = Math.hypot(rx, ry);
+  if (aimMag > 0.3) {
+    return {
+      aim: {
+        x: rx,
+        y: ry,
+      }
+    }
+  }
+  return {}
+}
 
-  const activeModuleIds = modules
-    .filter(({ keymap }) => gp.buttons[keymap]?.pressed)
-    .map(({ module_id }) => module_id);
-  const clientInput = {
-    move:
-      moveMag > 0.2
-        ? {
-          x: lx * 2,
-          y: ly * 2,
-        }
-        : {
-          x: 0,
-          y: 0
+const getPlayerMovement = (gp) => {
+  const [lx, ly] = gp.axes;
+  const moveMag = Math.hypot(lx, ly);
+  if (moveMag > 0.2) {
+    return {
+      move: {
+        x: lx * 2,
+        y: ly * 2,
+      }
+    }
+  }
+  return {
+    move: {
+      x: 0,
+      y: 0
+    }
+  }
+}
 
-        },
-    aim:
-      aimMag > 0.3
-        ? {
-          x: rx,
-          y: ry,
-        }
-        : false,
-    fire: gp.buttons[RIGHT_TRIGGER_KEY]?.pressed ?? false,
-    activate_modules: activeModuleIds.length > 0 ? activeModuleIds : false,
-  };
+/**
+* @typedef clientGameplayInput
+* @type {Object}
+* @property {Object} move
+* @property {number} move.x
+* @property {number} move.y
+* @property {Object} [aim]
+* @property {number} [aim.x]
+* @property {number} [aim.y]
+* @property {boolean} fire
+**/
 
-  const eventTriggers = {
-    open_menu: gp.buttons[START_KEY]?.pressed,
-    open_ship_editor: gp.buttons[SELECT_KEY]?.pressed,
-  };
-
-  return [clientInput, eventTriggers];
-};
 
 export const EDITOR_KEYMAP = {
   DPAD_UP_KEY,
@@ -89,24 +102,35 @@ export const EDITOR_KEYMAP = {
   LEFT_BUMPER_KEY,
 };
 
-export const parseGamePadEditing = (gp) => {
-  if (!gp) return [false, false];
-
-  const eventTriggers = {
-    open_menu: gp.buttons[START_KEY]?.pressed,
-    open_ship_editor: gp.buttons[SELECT_KEY]?.pressed,
-  };
+const getEditorInput = (gp) => {
+  const eventTriggers = {};
 
   for (const key of Object.values(EDITOR_KEYMAP)) {
     if (gp.buttons[key]?.pressed) {
       eventTriggers[key] = true;
     }
   }
+  return eventTriggers;
+}
 
-  const { activate_modules, ...clientInput } = parseGamePadPlaying(
-    gp,
-    equippedModules,
-  )[0];
+export const parseGamepad = (mode, gp) => {
+  const clientInput = {
+    ...getPlayerMovement(gp),
+    ...getPlayerFiring(gp),
+    ...getPlayerAim(gp)
+  }
 
-  return [clientInput, eventTriggers];
-};
+  let eventTriggers = getStartSelectEventTriggers(gp);
+  if (mode === 'EDITOR') {
+    eventTriggers = {
+      ...eventTriggers,
+      ...getEditorInput(gp),
+    }
+  }
+
+  return {
+    clientInput,
+    eventTriggers
+  }
+
+}

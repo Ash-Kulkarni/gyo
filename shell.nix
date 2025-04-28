@@ -4,6 +4,7 @@ pkgs.mkShell {
   packages = [
     pkgs.python313
     pkgs.nodejs_22
+    pkgs.typescript
     pkgs.typescript-language-server
     pkgs.prettierd
     pkgs.uv

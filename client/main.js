@@ -10,137 +10,75 @@ import { draw } from "./draw/draw.js";
 import { handleEditorInput } from "./draw/editor.js";
 import { updateDebugOverlay } from "./debug.js";
 import { setCurrentView, VIEW, uiState } from "./state.js";
-import {
-  pollGamepad,
-  parseGamePadPlaying,
-  parseGamePadEditing,
-  equippedModules,
-} from "./input.js";
+import { pollGamepad, parseGamepad } from "./input.js";
 
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let bgBuffer, bgSource, bgGain;
 
+let bgBuffer, bgSource, bgGain;
 async function loadBackgroundLoop() {
-  // fetch and decode the loop
   const resp = await fetch('base_loop_1.wav');
   const arrayBuf = await resp.arrayBuffer();
   bgBuffer = await audioCtx.decodeAudioData(arrayBuf);
 }
-
 function playBackgroundLoop() {
-  // create a fresh source each time
   bgSource = audioCtx.createBufferSource();
   bgGain = audioCtx.createGain();
   bgSource.buffer = bgBuffer;
   bgSource.loop = true;
-
-  // ducking helpers (optional)
   bgGain.gain.value = 0.8;
   bgSource.connect(bgGain).connect(audioCtx.destination);
   bgSource.start();
 }
-
-// resume on first user gesture (browser autoplay policy)
 document.addEventListener('click', () => {
   audioCtx.resume().then(() => {
     if (bgBuffer && !bgSource) playBackgroundLoop();
   });
 }, { once: true });
-
-// load the loop immediately
 loadBackgroundLoop();
-// const playerInventory = [
-//   // {
-//   //   id: 1,
-//   //   name: "Laser Cannon",
-//   //   module_id: 20,
-//   //   weapon_id: "lc01",
-//   //   cooldown: 0,
-//   //   max_cooldown: 0.2,
-//   //   offset_angle: 0.2,
-//   //   distance: 20,
-//   //   aim_angle: 0,
-//   // },
-//   // { id: 2, name: "Shield Generator" },
-//   // { id: 3, name: "Engine Module" },
-// ];
 
-const handleEventsPlaying = (triggers) => {
-  if (triggers.length === 0) return uiState.currentView;
-  if (triggers.open_menu) {
-    setCurrentView(
-      uiState.currentView === VIEW.MAIN_MENU ? VIEW.PLAYING : VIEW.MAIN_MENU,
-    );
-  } else if (triggers.open_ship_editor) {
-    setCurrentView(
-      uiState.currentView === VIEW.EDITOR ? VIEW.PLAYING : VIEW.EDITOR,
-    );
-  }
-  return uiState.currentView;
-};
-const handleEventsEditing = (triggers) => {
-  if (triggers.length === 0) return uiState.currentView;
-  if (triggers.open_menu) {
-    setCurrentView(
-      uiState.currentView === VIEW.MAIN_MENU ? VIEW.PLAYING : VIEW.MAIN_MENU,
-    );
-  } else if (triggers.open_ship_editor) {
-    setCurrentView(
-      uiState.currentView === VIEW.EDITOR ? VIEW.PLAYING : VIEW.EDITOR,
-    );
-  }
-  const player = state.players[playerId];
-  const equippedModuleIds = player.modules.map(({ module_id }) => module_id);
-  console.log({ equippedModuleIds });
-  const unequippedInventory = playerInventory.filter(
-    ({ module_id }) => !equippedModuleIds.includes(module_id),
-  );
-  handleEditorInput(triggers, player, unequippedInventory);
 
-  return uiState.currentView;
+let prevEvents = {};
+const getRisingEdge = (triggers) => {
+  const edges = {};
+  for (const key in triggers) {
+    edges[key] = triggers[key] && !prevEvents[key];
+  }
+  prevEvents = { ...triggers };
+  return edges;
 };
 
 const handleEvents = (triggers) => {
-  if (uiState.currentView === VIEW.PLAYING) {
-    return handleEventsPlaying(triggers);
-  } else if (uiState.currentView === VIEW.EDITOR) {
-    return handleEventsEditing(triggers);
-  } else if (uiState.currentView === VIEW.MAIN_MENU) {
-    return handleEventsPlaying(triggers);
-  } else {
-    console.warn("Unknown view:", uiState.currentView);
+
+  if (triggers?.open_menu) {
+    setCurrentView(uiState.currentView === VIEW.MAIN_MENU ? VIEW.PLAYING : VIEW.MAIN_MENU)
   }
+
+  if (triggers?.open_ship_editor) {
+    setCurrentView(uiState.currentView === VIEW.EDITOR ? VIEW.PLAYING : VIEW.EDITOR);
+  }
+
+  if (uiState.currentView === VIEW.EDITOR) {
+    const player = state.players[playerId];
+    const equippedModuleIds = player.modules.map(({ module_id }) => module_id);
+    const unequippedInventory = playerInventory.filter(
+      inv => !equippedModuleIds.includes(inv.module_id),
+    );
+    handleEditorInput(triggers, player, unequippedInventory);
+  }
+  return uiState.currentView;
 };
 
-// todo: debounce module activations
-// todo: switch 'fire' to start and stop fire events
-let prevTriggers = {};
-const gameLoop = () => {
-  const gpInput = pollGamepad();
-  let clientInput = {};
-  let eventTriggers = {};
-  if (uiState.currentView === VIEW.PLAYING) {
-    [clientInput, eventTriggers] = parseGamePadPlaying(
-      gpInput,
-      equippedModules,
-    );
-  } else if (uiState.currentView === VIEW.EDITOR) {
-    [clientInput, eventTriggers] = parseGamePadEditing(gpInput);
-  } else if (uiState.currentView === VIEW.MAIN_MENU) {
-    [clientInput, eventTriggers] = parseGamePadPlaying(
-      gpInput,
-      equippedModules,
-    );
-  } else {
-    console.warn("Unknown view:", uiState.currentView);
-  }
 
-  const triggers = {};
-  for (const key in eventTriggers) {
-    triggers[key] = eventTriggers[key] && !prevTriggers[key];
+const gameLoop = () => {
+  const gp = pollGamepad();
+  if (!gp) {
+    requestAnimationFrame(gameLoop);
+    return;
   }
-  prevTriggers = eventTriggers;
+  const mode = uiState.currentView === VIEW.EDITOR ? 'EDITOR' : uiState.currentView === VIEW.PLAYING ? 'PLAYING' : 'MAIN_MENU';
+  const { clientInput, eventTriggers } = parseGamepad(mode, gp);
+  const triggers = getRisingEdge(eventTriggers);
 
   sendInput(clientInput);
   const view = handleEvents(triggers);
