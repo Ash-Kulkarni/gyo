@@ -12,12 +12,6 @@ pkgs.mkShell {
     pkgs.rustc
     pkgs.ruff
     pkgs.mypy
+    pkgs.just
   ];
-
-  shellHook = ''
-    alias run-server='uv run uvicorn server.main:app --reload'
-    alias test-server='uv run pytest'
-    alias run-client='npx vite --port=8080 client/'
-    alias test-client='npx vitest'
-  '';
 }

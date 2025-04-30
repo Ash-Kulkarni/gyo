@@ -1,4 +1,9 @@
 const canvas = document.getElementById("game");
+
+if (!canvas) {
+  throw new Error("Canvas element not found");
+}
+
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 import { editorState, EDITOR_MODE } from "./editor.js";
@@ -10,6 +15,11 @@ window.addEventListener("resize", () => {
 });
 
 const ctx = canvas.getContext("2d");
+if (!ctx) {
+  throw new Error("2D context not found");
+}
+
+
 import { playerId } from "./../net.js";
 import { SHAPES } from "./../shared/shapes.js";
 
@@ -113,7 +123,13 @@ function drawEnemies(enemies) {
 }
 
 export function draw(view, state, input, inventory) {
+  console.log("Drawing frame", { view, state, canvas: { width: canvas.width, height: canvas.height } });
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!state || !view) {
+    console.warn("No state or view to draw");
+    return
+  }
+
 
   const players = state.players || {};
   const bullets = state.bullets || [];

@@ -43,7 +43,9 @@ def respawn_dead_players(s: AppState, dt: float):
 
 async def broadcast_state(s: AppState, dt: float):
     state = read_state(s, dt)
-    for p in s.players.values():
+
+    player_snapshot = list(s.players.values())
+    for p in player_snapshot:
         try:
             await p["ws"].send_text(json.dumps(state))
         except:

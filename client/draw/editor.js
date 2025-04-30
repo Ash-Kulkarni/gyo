@@ -22,6 +22,14 @@ const equipModuleFromInventory = (
   unequippedInventory,
   inventoryIndex,
 ) => {
+  if (
+    unequippedInventory.length === 0 ||
+    inventoryIndex < 0 ||
+    inventoryIndex >= unequippedInventory.length
+  ) {
+    console.error("Invalid inventory index");
+    return;
+  }
   console.log("equipModuleFromInventory");
   sendInput({
     event: "equip_module",
@@ -80,13 +88,9 @@ const editModuleAim = (
   });
   console.log("editModuleAim");
 };
-const saveModule = (equippedModules, equippedIndex) => {
-  // sendInput({ event: "save_module", module_id: equippedModules[equippedIndex].module_id });
-  console.log("saveModule");
-};
 
 export function handleEditorInput(input, player, unequippedInventory) {
-  // console.log("Editor input:", input);
+  console.log("Editor input:", input);
   const equippedModules = player.modules;
   const selectedModule = player.modules.length
     ? player.modules[editorState.equippedIndex]

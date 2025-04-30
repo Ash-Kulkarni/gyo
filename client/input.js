@@ -129,8 +129,8 @@ export const parseGamepad = (mode, gp) => {
   }
 
   return {
-    clientInput,
-    eventTriggers
+    clientInput, // input to send to server
+    eventTriggers // events to trigger on client
   }
 
 }

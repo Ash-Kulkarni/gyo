@@ -10,7 +10,7 @@ import { draw } from "./draw/draw.js";
 import { handleEditorInput } from "./draw/editor.js";
 import { updateDebugOverlay } from "./debug.js";
 import { setCurrentView, VIEW, uiState } from "./state.js";
-import { pollGamepad, parseGamepad } from "./input.js";
+import { pollGamepad, parseGamepad, EDITOR_KEYMAP } from "./input.js";
 
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -39,16 +39,51 @@ loadBackgroundLoop();
 
 
 let prevEvents = {};
-const getRisingEdge = (triggers) => {
+let debounceTimers = {};
+let repeatTimers = {};
+
+const getRisingEdge = (triggers, mode) => {
   const edges = {};
+  const debounceSensitivity = mode === 'EDITOR' ? 100 : 0;
+  const repeatKeys = mode === 'EDITOR' ? [
+    EDITOR_KEYMAP.DPAD_UP_KEY, EDITOR_KEYMAP.DPAD_DOWN_KEY, EDITOR_KEYMAP.DPAD_LEFT_KEY, EDITOR_KEYMAP.DPAD_RIGHT_KEY
+  ].map(k => k.toString()) : [];
+  console.log({ triggers })
+  console.log({ repeatKeys })
   for (const key in triggers) {
-    edges[key] = triggers[key] && !prevEvents[key];
+    key
+    console.log({ key })
+    const isDebounced = debounceTimers[key] && (Date.now() - debounceTimers[key]) < debounceSensitivity;
+
+    if (triggers[key] && !prevEvents[key] && !isDebounced) {
+      edges[key] = true;
+      debounceTimers[key] = Date.now();
+    } else if (repeatKeys.includes(key)) {
+      if (!repeatTimers[key]) {
+
+        edges[key] = true;
+        repeatTimers[key] = setInterval(() => {
+          edges[key] = true;
+        }, 100);
+
+      }
+    }
+    else {
+      edges[key] = false;
+      if (repeatTimers[key]) {
+        clearInterval(repeatTimers[key]);
+        delete repeatTimers[key];
+      }
+
+    }
   }
   prevEvents = { ...triggers };
+  console.log({ edges })
   return edges;
 };
 
 const handleEvents = (triggers) => {
+  if (!state?.players || !playerId) return uiState.currentView;
 
   if (triggers?.open_menu) {
     setCurrentView(uiState.currentView === VIEW.MAIN_MENU ? VIEW.PLAYING : VIEW.MAIN_MENU)
@@ -78,7 +113,7 @@ const gameLoop = () => {
   }
   const mode = uiState.currentView === VIEW.EDITOR ? 'EDITOR' : uiState.currentView === VIEW.PLAYING ? 'PLAYING' : 'MAIN_MENU';
   const { clientInput, eventTriggers } = parseGamepad(mode, gp);
-  const triggers = getRisingEdge(eventTriggers);
+  const triggers = getRisingEdge(eventTriggers, mode);
 
   sendInput(clientInput);
   const view = handleEvents(triggers);

@@ -19,7 +19,12 @@ from .systems import (
 from .enemies import maybe_spawn_enemies
 from .collision import check_bullet_collisions, handle_enemy_player_collisions
 from .modules import tick_modules
-from .types import AppState
+from .types import (
+    AppState,
+    start_live_logging,
+    stop_live_logging,
+    update_live_app_state,
+)
 from .client_input import handle_client_input
 
 
@@ -44,7 +49,6 @@ async def get_inventory(pid: str):
     if not inventory:
         print(f"Inventory not found for player {pid}")
         return {"error": "Inventory not found"}
-    print(f"Inventory for player {pid}: {inventory}")
     return inventory
 
 
@@ -55,7 +59,6 @@ async def ws_endpoint(ws: WebSocket):
     await ws.send_text(json.dumps({"type": "hello", "pid": pid}))
     print(f"🔌 Player connected: {pid}")
     players = app.state.players
-    bullets = app.state.bullets
     scoreboard = app.state.scoreboard
     players[pid] = default_player(ws)
     scoreboard[pid] = {"kills": 0}
@@ -69,8 +72,6 @@ async def ws_endpoint(ws: WebSocket):
             current_time = asyncio.get_event_loop().time()
             last_input_time = players[pid].get(
                 "last_input_time") or current_time
-            print("current_time", current_time)
-            print("last_input_time", last_input_time)
             dt = current_time - last_input_time
             players[pid]["last_input_time"] = current_time
             await handle_client_input(
@@ -107,14 +108,19 @@ def run_systems(s: AppState, dt: float):
 
 
 async def broadcast_loop(s: AppState):
-    last_time = asyncio.get_event_loop().time()
-    while True:
-        current_time = asyncio.get_event_loop().time()
-        dt = (current_time - last_time) * 30
-        last_time = current_time
-        run_systems(s, dt)
-        await broadcast_state(s, dt)
-        await asyncio.sleep(0)
+    start_live_logging()
+    try:
+        last_time = asyncio.get_event_loop().time()
+        while True:
+            current_time = asyncio.get_event_loop().time()
+            dt = (current_time - last_time) * 30
+            last_time = current_time
+            run_systems(s, dt)
+            update_live_app_state(s, dt)
+            await broadcast_state(s, dt)
+            await asyncio.sleep(0)
+    finally:
+        stop_live_logging()
 
 
 @app.on_event("startup")
