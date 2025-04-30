@@ -201,7 +201,7 @@ function drawBullets(bullets) {
     ctx.arc(b.x, b.y, b.radius, 0, 2 * Math.PI);
     ctx.shadowColor = "white";
     ctx.shadowBlur = 15;
-    ctx.fillStyle = "white";
+    ctx.fillStyle = b.colour || "white";
     ctx.fill();
   }
 }

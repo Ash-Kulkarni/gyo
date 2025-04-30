@@ -14,8 +14,11 @@ def check_bullet_collisions(s: AppState, dt: float):
 
     for bullet in s.bullets:
         hit = False
-        circle = {"x": bullet["x"], "y": bullet["y"], "r": bullet.get("radius")}
+        circle = {"x": bullet["x"], "y": bullet["y"],
+                  "r": bullet.get("radius")}
         for enemy in s.enemies:
+            if bullet["from"] == enemy["id"]:
+                continue
             ex, ey = enemy["x"], enemy["y"]
 
             dx = circle["x"] - ex
@@ -36,7 +39,9 @@ def check_bullet_collisions(s: AppState, dt: float):
                 enemy["hp"] -= 1
                 hit = True
                 if enemy["hp"] <= 0:
-                    s.scoreboard[bullet["from"]]["kills"] += 1
+                    f = bullet.get("from")
+                    if f in s.scoreboard:
+                        s.scoreboard[f]["kills"] += 1
                     dead_enemies.append(enemy)
                     # print(f"Enemy {enemy} killed by bullet {bullet}")
                 break
@@ -108,19 +113,22 @@ def sat_circle_vs_polygon(circle, polygon_vertices, px, py, angle):
         axis = normalize(-edge[1], edge[0])
 
         poly_proj = project_polygon(axis, world_poly)
-        circle_proj = project_circle(axis, circle["x"], circle["y"], circle["r"])
+        circle_proj = project_circle(
+            axis, circle["x"], circle["y"], circle["r"])
 
         if not polygons_overlap(poly_proj, circle_proj):
             return False
 
     closest_point = min(
-        world_poly, key=lambda v: (v[0] - circle["x"]) ** 2 + (v[1] - circle["y"]) ** 2
+        world_poly, key=lambda v: (
+            v[0] - circle["x"]) ** 2 + (v[1] - circle["y"]) ** 2
     )
     axis_to_circle = normalize(
         closest_point[0] - circle["x"], closest_point[1] - circle["y"]
     )
     poly_proj = project_polygon(axis_to_circle, world_poly)
-    circle_proj = project_circle(axis_to_circle, circle["x"], circle["y"], circle["r"])
+    circle_proj = project_circle(
+        axis_to_circle, circle["x"], circle["y"], circle["r"])
 
     return polygons_overlap(poly_proj, circle_proj)
 

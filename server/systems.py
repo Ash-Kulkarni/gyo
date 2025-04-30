@@ -4,32 +4,6 @@ import json
 from .types import AppState
 
 
-def update_enemy_behavior(s: AppState, dt: float):
-    for enemy in s.enemies:
-        if enemy["type"] == "chaser":
-            # find closest player
-            closest = None
-            closest_dist = float("inf")
-            for p in s.players.values():
-                dx = p["x"] - enemy["x"]
-                dy = p["y"] - enemy["y"]
-                d2 = dx * dx + dy * dy
-                if d2 < closest_dist:
-                    closest = p
-                    closest_dist = d2
-                    move_dx = dx
-                    move_dy = dy
-
-            if closest:
-                dist = math.sqrt(closest_dist)
-                if dist > 0:
-                    nx = move_dx / dist
-                    ny = move_dy / dist
-                    speed = enemy.get("speed", 1.5)
-                    enemy["x"] += nx * speed * dt
-                    enemy["y"] += ny * speed * dt
-
-
 def respawn_dead_players(s: AppState, dt: float):
     for pid, player in s.players.items():
         if player["hp"] <= 0:
@@ -104,9 +78,3 @@ def tick_player_velocity(s: AppState, dt: float):
         p["y"] += p["vy"] * dt
         p["x"] = max(-w / 2, min(p["x"], w / 2))
         p["y"] = max(-h / 2, min(p["y"], h / 2))
-
-
-def tick_enemy_velocity(s: AppState, dt: float):
-    for e in s.enemies:
-        e["x"] += e["vx"] * dt
-        e["y"] += e["vy"] * dt

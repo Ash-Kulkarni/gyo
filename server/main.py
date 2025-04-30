@@ -9,14 +9,12 @@ from .player import default_player, mock_inventory
 from .systems import (
     tick_bullets_velocity,
     tick_player_velocity,
-    tick_enemy_velocity,
-    update_enemy_behavior,
     respawn_dead_players,
     remove_out_of_bounds_bullets,
     broadcast_state,
     tick_player_weapon_cooldowns,
 )
-from .enemies import maybe_spawn_enemies
+from .enemies import maybe_spawn_enemies, tick_enemies
 from .collision import check_bullet_collisions, handle_enemy_player_collisions
 from .modules import tick_modules
 from .types import (
@@ -89,13 +87,12 @@ async def ws_endpoint(ws: WebSocket):
 
 all_systems = [
     tick_player_weapon_cooldowns,
-    update_enemy_behavior,
     maybe_spawn_enemies,
     handle_enemy_player_collisions,
     respawn_dead_players,
     tick_bullets_velocity,
     tick_player_velocity,
-    tick_enemy_velocity,
+    tick_enemies,
     check_bullet_collisions,
     remove_out_of_bounds_bullets,
     tick_modules,

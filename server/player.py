@@ -34,13 +34,6 @@ def default_weapons():
 
 def default_modules():
     dms = []
-
-    for name, max_cooldown in [
-        ("shield", 5),
-        ("boost", 5),
-        ("quad", 5),
-    ]:
-        dms.append(new_module(name, max_cooldown))
     return dms + default_weapons()
 
 
