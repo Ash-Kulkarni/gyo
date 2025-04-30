@@ -7,7 +7,7 @@ import {
   playerId,
 } from "./net.js";
 import { draw } from "./draw/draw.js";
-import { handleEditorInput } from "./draw/editor.js";
+import { handleEditorInput, EDITOR_MODE, editorState } from "./draw/editor.js";
 import { updateDebugOverlay } from "./debug.js";
 import { setCurrentView, VIEW, uiState } from "./state.js";
 import { pollGamepad, parseGamepad, EDITOR_KEYMAP } from "./input.js";
@@ -44,41 +44,44 @@ let repeatTimers = {};
 
 const getRisingEdge = (triggers, mode) => {
   const edges = {};
-  const debounceSensitivity = mode === 'EDITOR' ? 100 : 0;
+  const debounceSensitivity = mode === 'EDITOR' ? 200 : 0; // 200ms debounce for EDITOR mode
   const repeatKeys = mode === 'EDITOR' ? [
-    EDITOR_KEYMAP.DPAD_UP_KEY, EDITOR_KEYMAP.DPAD_DOWN_KEY, EDITOR_KEYMAP.DPAD_LEFT_KEY, EDITOR_KEYMAP.DPAD_RIGHT_KEY
+    EDITOR_KEYMAP.DPAD_UP_KEY,
+    EDITOR_KEYMAP.DPAD_DOWN_KEY,
+    EDITOR_KEYMAP.DPAD_LEFT_KEY,
+    EDITOR_KEYMAP.DPAD_RIGHT_KEY
   ].map(k => k.toString()) : [];
-  console.log({ triggers })
-  console.log({ repeatKeys })
+
   for (const key in triggers) {
-    key
-    console.log({ key })
     const isDebounced = debounceTimers[key] && (Date.now() - debounceTimers[key]) < debounceSensitivity;
 
-    if (triggers[key] && !prevEvents[key] && !isDebounced) {
-      edges[key] = true;
-      debounceTimers[key] = Date.now();
-    } else if (repeatKeys.includes(key)) {
-      if (!repeatTimers[key]) {
-
+    if (triggers[key]) {
+      if (!prevEvents[key] && !isDebounced) {
+        // Rising edge: key was just pressed
         edges[key] = true;
-        repeatTimers[key] = setInterval(() => {
-          edges[key] = true;
-        }, 100);
-
+        debounceTimers[key] = Date.now();
+      } else if ((EDITOR_MODE.AIM_EDIT === editorState.mode || EDITOR_MODE.POSITION_EDIT === editorState.mode) && repeatKeys.includes(key)) {
+        // Handle held keys for repeatKeys
+        if (!repeatTimers[key]) {
+          repeatTimers[key] = setInterval(() => {
+            sendInput({ [key]: true }); // Send repeated input
+          }, debounceSensitivity);
+        }
+        edges[key] = true; // Ensure the key is marked as active
       }
-    }
-    else {
+    } else {
+      // Key is not pressed
       edges[key] = false;
+
+      // Clear repeat timer if key is released
       if (repeatTimers[key]) {
         clearInterval(repeatTimers[key]);
         delete repeatTimers[key];
       }
-
     }
   }
+
   prevEvents = { ...triggers };
-  console.log({ edges })
   return edges;
 };
 
