@@ -78,3 +78,30 @@ def tick_player_velocity(s: AppState, dt: float):
         p["y"] += p["vy"] * dt
         p["x"] = max(-w / 2, min(p["x"], w / 2))
         p["y"] = max(-h / 2, min(p["y"], h / 2))
+
+
+def clamp_to_world_bounds(world_size, x, y):
+    """Clamp coordinates to world bounds."""
+    w = world_size.get("width", None)
+    h = world_size.get("height", None)
+    if w is None or h is None:
+        raise ValueError("World size not defined")
+    x = max(-w / 2, min(x, w / 2))
+    y = max(-h / 2, min(y, h / 2))
+    return x, y
+
+
+def clamp_players_to_world_bounds(s: AppState, dt: float):
+    """Clamp players to world bounds."""
+    for pid, p in s.players.items():
+        clamped_x, clamped_y = clamp_to_world_bounds(s.world_size, p["x"], p["y"])
+        p["x"] = clamped_x
+        p["y"] = clamped_y
+
+
+def clamp_enemies_to_world_bounds(s: AppState, dt: float):
+    """Clamp enemies to world bounds."""
+    for e in s.enemies:
+        clamped_x, clamped_y = clamp_to_world_bounds(s.world_size, e["x"], e["y"])
+        e["x"] = clamped_x
+        e["y"] = clamped_y

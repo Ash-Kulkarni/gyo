@@ -7,84 +7,15 @@ import {
   playerId,
 } from "./net.js";
 import { draw } from "./draw/draw.js";
-import { handleEditorInput, EDITOR_MODE, editorState } from "./draw/editor.js";
+import { handleEditorInput } from "./draw/editor.js";
 import { updateDebugOverlay } from "./debug.js";
 import { setCurrentView, VIEW, uiState } from "./state.js";
-import { pollGamepad, parseGamepad, EDITOR_KEYMAP } from "./input.js";
+import { pollGamepad, parseGamepad } from "./input.js";
+import { setupAudio } from "./audio.js";
+import { getRisingEdge } from "./debounce.js";
 
 
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-let bgBuffer, bgSource, bgGain;
-async function loadBackgroundLoop() {
-  const resp = await fetch('base_loop_1.wav');
-  const arrayBuf = await resp.arrayBuffer();
-  bgBuffer = await audioCtx.decodeAudioData(arrayBuf);
-}
-function playBackgroundLoop() {
-  bgSource = audioCtx.createBufferSource();
-  bgGain = audioCtx.createGain();
-  bgSource.buffer = bgBuffer;
-  bgSource.loop = true;
-  bgGain.gain.value = 0.8;
-  bgSource.connect(bgGain).connect(audioCtx.destination);
-  bgSource.start();
-}
-document.addEventListener('click', () => {
-  audioCtx.resume().then(() => {
-    if (bgBuffer && !bgSource) playBackgroundLoop();
-  });
-}, { once: true });
-loadBackgroundLoop();
-
-
-let prevEvents = {};
-let debounceTimers = {};
-let repeatTimers = {};
-
-const getRisingEdge = (triggers, mode) => {
-  const edges = {};
-  const debounceSensitivity = mode === 'EDITOR' ? 200 : 0; // 200ms debounce for EDITOR mode
-  const repeatKeys = mode === 'EDITOR' ? [
-    EDITOR_KEYMAP.DPAD_UP_KEY,
-    EDITOR_KEYMAP.DPAD_DOWN_KEY,
-    EDITOR_KEYMAP.DPAD_LEFT_KEY,
-    EDITOR_KEYMAP.DPAD_RIGHT_KEY
-  ].map(k => k.toString()) : [];
-
-  for (const key in triggers) {
-    const isDebounced = debounceTimers[key] && (Date.now() - debounceTimers[key]) < debounceSensitivity;
-
-    if (triggers[key]) {
-      if (!prevEvents[key] && !isDebounced) {
-        // Rising edge: key was just pressed
-        edges[key] = true;
-        debounceTimers[key] = Date.now();
-      } else if ((EDITOR_MODE.AIM_EDIT === editorState.mode || EDITOR_MODE.POSITION_EDIT === editorState.mode) && repeatKeys.includes(key)) {
-        // Handle held keys for repeatKeys
-        if (!repeatTimers[key]) {
-          repeatTimers[key] = setInterval(() => {
-            sendInput({ [key]: true }); // Send repeated input
-          }, debounceSensitivity);
-        }
-        edges[key] = true; // Ensure the key is marked as active
-      }
-    } else {
-      // Key is not pressed
-      edges[key] = false;
-
-      // Clear repeat timer if key is released
-      if (repeatTimers[key]) {
-        clearInterval(repeatTimers[key]);
-        delete repeatTimers[key];
-      }
-    }
-  }
-
-  prevEvents = { ...triggers };
-  return edges;
-};
-
+// Handles client-side events based on gamepad input, such as opening menus or switching views.
 const handleEvents = (triggers) => {
   if (!state?.players || !playerId) return uiState.currentView;
 
@@ -125,4 +56,5 @@ const gameLoop = () => {
   requestAnimationFrame(gameLoop);
 };
 
+setupAudio();
 setupSocket(gameLoop);

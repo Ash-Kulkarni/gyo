@@ -1,3 +1,6 @@
+just:
+  just --list
+
 run-server:
     uv run uvicorn server.main:app --reload --use-colors
 

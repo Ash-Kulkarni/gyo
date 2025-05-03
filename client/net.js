@@ -7,17 +7,16 @@ export let playerInventory = [];
  * Safely closes the existing WebSocket connection if it exists.
  */
 function closeSocket() {
-  if (socket) {
-    socket.onopen = null;
-    socket.onmessage = null;
-    socket.onerror = null;
-    socket.onclose = null;
-    if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
-      socket.close();
-    }
-    socket = null;
+  if (!socket) return
+  socket.onopen = null;
+  socket.onmessage = null;
+  socket.onerror = null;
+  socket.onclose = null;
+  if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+    socket.close();
   }
-}
+  socket = null;
+};
 
 /**
  * Sends input to the server via WebSocket.
@@ -40,6 +39,10 @@ export function setupSocket(startGameLoop) {
   closeSocket(); // Ensure any existing socket is closed before creating a new one
 
   socket = new WebSocket("ws://localhost:8000/ws");
+  if (!socket) {
+    console.error("❗ Failed to create WebSocket connection");
+    return;
+  }
 
   socket.onopen = () => {
     console.log("✅ Connected to server");

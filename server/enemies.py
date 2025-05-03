@@ -25,8 +25,7 @@ class EnemyType(Enum):
     CHASER = "chaser"
 
 
-ENEMY_COLOURS = ["#ff4b4b", "#ff944b",
-                 "#ffe14b", "#4bff75", "#4bd5ff", "#9b4bff"]
+ENEMY_COLOURS = ["#ff4b4b", "#ff944b", "#ffe14b", "#4bff75", "#4bd5ff", "#9b4bff"]
 
 MOVEMENT_PATTERNS = ["chase", "zigzag", "circle"]
 
@@ -127,5 +126,4 @@ def tick_enemies(s: AppState, dt: float):
     _ps = []
     for enemy in s.enemies:
         _ps.extend(update_enemy(enemy, s.players, dt))
-    print(f"New projectiles: {_ps}")
     s.bullets[:] = s.bullets + _ps
