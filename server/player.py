@@ -46,6 +46,7 @@ def default_player(ws: WebSocket):
         "vx": 0,
         "vy": 0,
         "a": 0,
+        "angle_velocity": 0,
         "speed": 10,
         "hp": 10,
         "colour": random.choice(["red", "green", "yellow"]),

@@ -75,14 +75,21 @@ def spawn_projectiles(s, w, player_velocity, pid, ship_angle, x, y):
 def clamp_players_to_world_bounds(s: AppState, dt: float):
     """Clamp players to world bounds."""
     for pid, p in s.players.items():
-        clamped_x, clamped_y = clamp_to_world_bounds(
-            s.world_size, p["x"], p["y"])
+        clamped_x, clamped_y = clamp_to_world_bounds(s.world_size, p["x"], p["y"])
         p["x"] = clamped_x
         p["y"] = clamped_y
 
 
 async def handle_client_input(s: AppState, dt: float, input_data, pid, inventory):
     p = s.players[pid]
+    mass = 1
+    accel = 650 / mass
+    friction = 25
+    max_speed = p.get("speed", 0) * 65
+    angle_accel = 8
+    max_turn_speed = 1800
+    springiness = 2
+    damping = 4
 
     move_x, move_y = None, None
     if input_data.get("move", False):
@@ -90,16 +97,31 @@ async def handle_client_input(s: AppState, dt: float, input_data, pid, inventory
         move_y = input_data["move"]["y"]
         move_angle = math.atan2(move_y, move_x)
 
-        move_speed = p.get("speed", 0)
-        p["vx"] = move_x * move_speed
-        p["vy"] = move_y * move_speed
+        p["vx"] = move_x * accel * dt
+        p["vy"] = move_y * accel * dt
 
+        p["vx"] -= friction * p["vx"] * dt
+        p["vy"] -= friction * p["vy"] * dt
+
+        speed = math.sqrt(p["vx"] ** 2 + p["vy"] ** 2)
+        if speed > max_speed:
+            p["vx"] = (p["vx"] / speed) * max_speed
+            p["vy"] = (p["vy"] / speed) * max_speed
+
+    desired_angle = None
     if input_data.get("aim", False):
         aim = input_data["aim"]
-        angle = math.atan2(aim["y"], aim["x"])
-        p["a"] = angle
+        desired_angle = math.atan2(aim["y"], aim["x"])
     elif move_x or move_y:
-        p["a"] = move_angle
+        desired_angle = move_angle
+    if desired_angle is not None:
+        delta = (desired_angle - p["a"] + math.pi) % (2 * math.pi) - math.pi
+        p["angle_velocity"] += delta * springiness * dt * angle_accel
+        p["angle_velocity"] -= damping * p["angle_velocity"] * dt
+        turn_speed = max_turn_speed * dt
+
+        p["angle_velocity"] = max(-max_turn_speed, min(p["angle_velocity"], turn_speed))
+        p["a"] += p["angle_velocity"] * dt
 
     if input_data.get("activate_modules", False):
         if module_ids := input_data["activate_modules"]:
@@ -155,8 +177,7 @@ def handle_editor_input(input_data, pid, player, inventory):
         case "edit_module_position":
             module_id = get_module_id(input_data)
             mod = next(
-                (m for m in player["modules"]
-                 if m["module_id"] == module_id), None
+                (m for m in player["modules"] if m["module_id"] == module_id), None
             )
             if mod is None:
                 return
@@ -169,8 +190,7 @@ def handle_editor_input(input_data, pid, player, inventory):
         case "edit_module_aim":
             module_id = get_module_id(input_data)
             mod = next(
-                (m for m in player["modules"]
-                 if m["module_id"] == module_id), None
+                (m for m in player["modules"] if m["module_id"] == module_id), None
             )
             if mod is None:
                 return
