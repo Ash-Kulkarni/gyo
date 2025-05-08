@@ -9,11 +9,14 @@ def compute_total_angle(base: float, offset: float = 0, aim: float = 0) -> float
 
 
 def compute_velocity(
-    angle: float, speed: float, move_speed: float
+    angle: float, speed: float, player_vx: float = 0, player_vy: float = 0
 ) -> tuple[float, float]:
     """Return (vx,vy) = unit‐vector(angle) * (speed + move_speed)."""
-    mag = speed + move_speed
-    return math.cos(angle) * mag, math.sin(angle) * mag
+    # if this weapon uses the ship velocity
+    # return math.cos(angle) * speed + player_vx, math.sin(angle) * speed + player_vy
+
+    # or if this is a light based weapon then it should be a constant speed
+    return math.cos(angle) * speed, math.sin(angle) * speed
 
 
 def spawn_point(
@@ -26,7 +29,8 @@ def spawn_point(
 def handle_fire_all(player, s, pid):
     x, y = player["x"], player["y"]
     ship_angle = player["a"]
-    move_speed = player.get("speed", 0)
+    player_vx = player["vx"]
+    player_vy = player["vy"]
 
     weapons = [m for m in player["modules"] if m.get("weapon_id")]
     for w in weapons:
@@ -34,10 +38,10 @@ def handle_fire_all(player, s, pid):
             continue
         w["cooldown"] = w["max_cooldown"]
 
-        spawn_projectiles(s, w, move_speed, pid, ship_angle, x, y)
+        spawn_projectiles(s, w, player_vx, player_vy, pid, ship_angle, x, y)
 
 
-def spawn_projectiles(s, w, player_velocity, pid, ship_angle, x, y):
+def spawn_projectiles(s, w, player_vx, player_vy, pid, ship_angle, x, y):
     weapon_id = w["weapon_id"]
     offset = w.get("offset_angle", 0)
     aim = w.get("aim_angle", 0)
@@ -61,14 +65,14 @@ def spawn_projectiles(s, w, player_velocity, pid, ship_angle, x, y):
     if weapon_id == "rapid":
         # speed = 12
         fire_angle = compute_total_angle(ship_angle, 0, aim)
-        vx, vy = compute_velocity(fire_angle, 12, player_velocity)
+        vx, vy = compute_velocity(fire_angle, 32, player_vx, player_vy)
         add_projectile(vx, vy)
 
     elif weapon_id == "spread":
         # speed = 8
         for spread in (-0.2, 0, 0.2):
             fire_angle = compute_total_angle(ship_angle, spread, aim)
-            vx, vy = compute_velocity(fire_angle, 8, player_velocity)
+            vx, vy = compute_velocity(fire_angle, 28, player_vx, player_vy)
             add_projectile(vx, vy)
 
 

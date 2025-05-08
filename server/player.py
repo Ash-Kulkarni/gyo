@@ -12,7 +12,7 @@ def new_module(name, max_cooldown, weapon_id=None):
         "max_cooldown": max_cooldown * 100,
         "offset_angle": angle,
         "distance": random.randint(20, 50),
-        "aim_angle": angle,
+        "aim_angle": 0,
         "colour": random.choice(["red", "green", "yellow"]),
     }
     if weapon_id:
