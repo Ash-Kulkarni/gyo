@@ -82,7 +82,7 @@ def clamp_players_to_world_bounds(s: AppState, dt: float):
 
 async def handle_client_input(s: AppState, dt: float, input_data, pid, inventory):
     p = s.players[pid]
-    mass = 1
+    mass = 0.6
     accel = 650 / mass
     friction = 25
     max_speed = p.get("speed", 0) * 65

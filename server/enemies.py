@@ -45,20 +45,21 @@ def spawn_enemy(x, y, type=EnemyType.CHASER.value):
         "colour": random.choice(ENEMY_COLOURS),
         "movement_pattern": random.choice(MOVEMENT_PATTERNS),
         "attack_cooldown": 0,
+        "attack_speed": random.uniform(10, 20),
     }
 
 
-last_enemy_spawn_time = 0
+last_enemy_spawn_time = 0.0
 
 
 def maybe_spawn_enemies(s: AppState, dt: float):
     global last_enemy_spawn_time
     if len(s.enemies) >= 10:
         return
-    if last_enemy_spawn_time > 0:
+    if last_enemy_spawn_time > 0.0:
         last_enemy_spawn_time -= dt
 
-    if last_enemy_spawn_time <= 0:
+    if last_enemy_spawn_time <= 0.0:
         last_enemy_spawn_time = random.uniform(0.5, 2.0)
         x = random.randint(-2000, 2000)
         y = random.randint(-2000, 2000)
@@ -115,7 +116,7 @@ def update_enemy(enemy, players, dt):
             )
         )
 
-        enemy["attack_cooldown"] = random.uniform(3, 8)
+        enemy["attack_cooldown"] = enemy["attack_speed"]
     else:
         enemy["attack_cooldown"] -= dt
     return new_projectiles
