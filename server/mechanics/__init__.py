@@ -1,11 +1,7 @@
 from dataclasses import dataclass
 from typing import Union, List, Any
 from enum import Enum
-
-
-@dataclass
-class Polygon:
-    points: List[tuple[float, float]]
+import math
 
 
 @dataclass
@@ -13,8 +9,8 @@ class Sector:
     x: float
     y: float
     radius: float
-    direction: float  # direction of center of the sector in radians
-    angle: float  # total spread angle in radians
+    start_angle: float  # in radians
+    end_angle: float  # in radians
 
 
 @dataclass
@@ -45,7 +41,12 @@ class Composite:
     shapes: List["MechanicShape"]
 
 
-MechanicShape = Union[Circle, Rectangle, Polygon, Sector, Composite]
+MechanicShape = Union[
+    Circle,
+    Rectangle,
+    Sector,
+    Composite,
+]
 
 
 @dataclass
@@ -125,6 +126,27 @@ def contains(shape: MechanicShape, px: float, py: float) -> bool:
             and shape.y - half_h <= py <= shape.y + half_h
         )
 
+    if isinstance(shape, Sector):
+        # 1) inside radius?
+        dx, dy = px - shape.x, py - shape.y
+        dist2 = dx * dx + dy * dy
+        if dist2 > shape.radius**2:
+            return False
+
+        # 2) angle within [start, end]?
+        ang = math.atan2(dy, dx)  # [-pi,pi]
+        # normalize to [0,2pi)
+        if ang < 0:
+            ang += 2 * math.pi
+        sa = shape.start_angle % (2 * math.pi)
+        ea = shape.end_angle % (2 * math.pi)
+
+        if sa <= ea:
+            return sa <= ang <= ea
+        else:
+            # wraps around zero
+            return ang >= sa or ang <= ea
+
     if isinstance(shape, Composite):
         # evaluate children first
         results = [contains(s, px, py) for s in shape.shapes]
@@ -143,33 +165,30 @@ def contains(shape: MechanicShape, px: float, py: float) -> bool:
 
 # — some examples
 
+if __name__ == "__main__":
+    # plus‐shape
+    hor = Rectangle(x=0, y=0, width=50, height=10)
+    ver = Rectangle(x=0, y=0, width=10, height=50)
+    plus = Composite(op=Op.UNION, shapes=[hor, ver])
 
-# 1) a “plus” shape: horizontal rect ∪ vertical rect
-hor = Rectangle(x=0, y=0, width=50, height=10)
-ver = Rectangle(x=0, y=0, width=10, height=50)
-plus = Composite(op=Op.UNION, shapes=[hor, ver])
+    # ring
+    outer = Circle(x=0, y=0, radius=30)
+    inner = Circle(x=0, y=0, radius=10)
+    ring = Composite(op=Op.DIFFERENCE, shapes=[outer, inner])
 
-# 2) a “ring”: big circle minus small circle
-outer = Circle(x=0, y=0, radius=30)
-inner = Circle(x=0, y=0, radius=10)
-ring = Composite(op=Op.DIFFERENCE, shapes=[outer, inner])
+    # quarter‐circle sector (0° → 90°)
+    quarter = Sector(x=0, y=0, radius=20, start_angle=0, end_angle=math.pi / 2)
 
-# 3) a “rounded corner” intersection
-c1 = Circle(x=20, y=20, radius=30)
-r1 = Rectangle(x=20, y=20, width=40, height=40)
-corner = Composite(op=Op.INTERSECTION, shapes=[c1, r1])
+    # test points
+    pts = [(0, 0), (20, 0), (0, 20), (15, 15), (-5, 5), (5, -5)]
+    print("Plus contains:")
+    for p in pts:
+        print(f"  {p}: {contains(plus, *p)}")
 
-# — test
+    print("\nRing contains:")
+    for p in [(0, 0), (15, 0), (25, 0), (0, 15), (0, 25)]:
+        print(f"  {p}: {contains(ring, *p)}")
 
-points = [(0, 0), (20, 0), (0, 20), (25, 25), (40, 0), (0, 40)]
-print("Plus contains:")
-for p in points:
-    print(p, contains(plus, *p))
-
-print("\nRing contains:")
-for p in [(0, 0), (15, 0), (25, 0), (40, 0)]:
-    print(p, contains(ring, *p))
-
-print("\nCorner contains:")
-for p in [(20, 20), (40, 20), (20, 40), (50, 50)]:
-    print(p, contains(corner, *p))
+    print("\nQuarter-sector contains:")
+    for p in pts:
+        print(f"  {p}: {contains(quarter, *p)}")
