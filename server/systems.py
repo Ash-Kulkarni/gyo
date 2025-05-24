@@ -24,8 +24,6 @@ async def broadcast_state(s: AppState, dt: float):
             await p["ws"].send_text(json.dumps(state))
         except Exception as e:
             print(f"❌ Error sending state to player {p['ws']}: {e}")
-            del s.players[p["ws"]]
-            del s.scoreboard[p["ws"]]
 
 
 def read_state(s: AppState, dt: float):
